@@ -142,6 +142,9 @@ Rcpp::List rcpp_scip_solve(
   if (!verbose) {
     SCIPsetIntParam(scip, "display/verblevel", 0);
   }
+  if (threads > 1) {
+    SCIPsetIntParam(scip, "parallel/maxnthreads", threads);
+  }
   if (!presolve) {
     SCIPsetIntParam(scip, "presolving/milp/maxrounds", 0);
     SCIPsetIntParam(scip, "presolving/trivial/maxrounds", 0);
@@ -193,7 +196,11 @@ Rcpp::List rcpp_scip_solve(
   }
 
   // Solve problem
-  SCIP_CALL(SCIPsolve(scip));
+  if (threads > 1) {
+    SCIP_CALL(SCIPsolveParallel(scip));
+  } else {
+    SCIP_CALL(SCIPsolve(scip));
+  }
   SCIP_SOL* sol = SCIPgetBestSol(scip);
 
   // Extract results

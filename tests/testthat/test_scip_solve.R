@@ -43,6 +43,29 @@ test_that("works with basic matrix", {
   expect_equal(x$status, "SCIP_STATUS_OPTIMAL")
 })
 
+test_that("works with parallel processing", {
+  skip_on_cran()
+  # run optimization
+  x <- scip_solve(
+    obj = c(1, 1, 2),
+    modelsense = "max",
+    lb = c(0, 0, 0),
+    ub = c(1, 1, 1),
+    rhs = c(4, 1),
+    sense = c("<=", ">="),
+    vtype = c("B", "B", "B"),
+    A = matrix(c(1, 2, 3, 1, 1, 0), nrow = 2, ncol = 3, byrow = TRUE),
+    verbose = FALSE,
+    threads = 2
+  )
+  # tests
+  expect_type(x, "list")
+  expect_named(x, c("objval", "x", "status"))
+  expect_equal(x$objval, 3)
+  expect_equal(x$x, c(1, 0 ,1))
+  expect_equal(x$status, "SCIP_STATUS_OPTIMAL")
+})
+
 test_that("handles infeasible problems", {
   # run optimization
   x <- scip_solve(
