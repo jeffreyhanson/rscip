@@ -71,6 +71,9 @@ NULL
 #' the returned solution may not meet the optimality gap (per `gap`).
 #' Defaults to `FALSE`.
 #'
+#' @param verbose `logical` should progress be displayed during optimization?
+#' Defaults to `TRUE`.
+#'
 #' @return A `list` containing the solution and additional information.
 #' Specifically, it contains the following elements:
 #'
@@ -266,7 +269,8 @@ scip_solve <- function(obj,
                        threads = 1,
                        presolve = TRUE,
                        time_limit = 1e+20,
-                       first_feasible = FALSE) {
+                       first_feasible = FALSE,
+                       verbose = TRUE) {
   # assert arguments are valid and prepare data
   ## argument classes
   assertthat::assert_that(
@@ -363,11 +367,25 @@ scip_solve <- function(obj,
     time_limit = time_limit,
     first_feasible = first_feasible,
     presolve = presolve,
-    threads = threads
+    threads = threads,
+    verbose = verbose,
+    display_width = getOption("width")
   )
 
   # convert status integer to status message
   result$status <- scip_status_message(result$status)
+
+  # ensure objval and x contain NULL values for infeasible/unbounded problems
+  invalid_status <- c(
+    "SCIP_STATUS_UNKNOWN",
+    "SCIP_STATUS_INFEASIBLE",
+    "SCIP_STATUS_UNBOUNDED",
+    "SCIP_STATUS_INFORUNBD"
+  )
+  if (result$status %in% invalid_status) {
+    result[1] <- list(NULL)
+    result[2] <- list(NULL)
+  }
 
   # return result
   result

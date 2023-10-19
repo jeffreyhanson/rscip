@@ -11,7 +11,7 @@ test_that("produces correct results", {
   expect_equal(scip_status_message(8), "SCIP_STATUS_SOLLIMIT")
   expect_equal(scip_status_message(9), "SCIP_STATUS_BESTSOLLIMIT")
   expect_equal(scip_status_message(10), "SCIP_STATUS_RESTARTLIMIT")
-  expect_equal(scip_status_message(11), "SCIP_STATUS_RESTARTLIMIT")
+  expect_equal(scip_status_message(11), "SCIP_STATUS_OPTIMAL")
   expect_equal(scip_status_message(12), "SCIP_STATUS_INFEASIBLE")
   expect_equal(scip_status_message(13), "SCIP_STATUS_UNBOUNDED")
   expect_equal(scip_status_message(14), "SCIP_STATUS_INFORUNBD")

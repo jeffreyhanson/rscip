@@ -6,14 +6,16 @@ PKG_TEST_HEADER="<scip/scip.h>"
 PKG_CFLAGS=""
 PKG_LIBS=""
 
-SCIP_INCLUDE_DIR="/opt/scipoptsuite/scipoptsuite-8.0.4/scip/src"
-SCIP_CONFIG_DIR="/opt/scipoptsuite/scipoptsuite-8.0.4/build/scip"
-SCIP_LIB_DIR="/opt/scipoptsuite/scipoptsuite-8.0.4/build/lib"
-
 # Check if variables are found
 if [ "$SCIP_INCLUDE_DIR" ] || [ "$SCIP_CONFIG_DIR" ] || ["$SCIP_LIB_DIR"] ; then
   ## if found, then use these variables
   echo "Found SCIP_INCLUDE_DIR, SCIP_CONFIG_DIR, and/or SCIP_LIB_DIR!"
+elif [ "$SCIP_HOME" ] ; then
+  ## if found, then use these variables
+  echo "Found SCIP_HOME!"
+  SCIP_INCLUDE_DIR=${SCIP_HOME}/scip/src
+  SCIP_CONFIG_DIR=${SCIP_HOME}/build/scip
+  SCIP_LIB_DIR=${SCIP_HOME}/build/lib
 else
   ## otherwise, compile SCIP from source and set variables
   echo "Compiling SCIP from source"

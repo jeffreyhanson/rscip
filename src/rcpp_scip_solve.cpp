@@ -2,7 +2,7 @@
 
 // [[Rcpp::export]]
 Rcpp::List rcpp_scip_solve(
-  std::string modelsense,
+  Rcpp::CharacterVector &modelsense,
   Rcpp::NumericVector &obj,
   Rcpp::NumericVector &lb,
   Rcpp::NumericVector &ub,
@@ -12,11 +12,13 @@ Rcpp::List rcpp_scip_solve(
   Rcpp::NumericVector &A_i, // constraint matrix rows
   Rcpp::NumericVector &A_j, // constraint matrix columns
   Rcpp::NumericVector &A_x, // constraint matrix coefficients
-  double gap,
-  double time_limit,
-  bool first_feasible,
-  bool presolve,
-  std::size_t threads
+  double gap = 0,
+  double time_limit = 1e+20,
+  bool first_feasible = false,
+  bool presolve = true,
+  std::size_t threads = 1,
+  bool verbose = true,
+  std::size_t display_width = 143
 ) {
 
   // Initialization
@@ -34,9 +36,9 @@ Rcpp::List rcpp_scip_solve(
   SCIP_CALL(SCIPcreateProbBasic(scip, "PROBLEM"));
 
   /// set model sense
-  if (strcmp(modelsense.c_str(), "min")) {
+  if (modelsense[0] == "min") {
     SCIP_CALL(SCIPsetObjsense(scip, SCIP_OBJSENSE_MINIMIZE));
-  } else if (strcmp(modelsense.c_str(), "max")) {
+  } else if (modelsense[0] == "max") {
     SCIP_CALL(SCIPsetObjsense(scip, SCIP_OBJSENSE_MAXIMIZE));
   } else {
     Rcpp::stop("`modelsense` not recognized.");
@@ -137,6 +139,9 @@ Rcpp::List rcpp_scip_solve(
   if (first_feasible) {
     SCIPsetIntParam(scip, "limits/solutions", 1);
   }
+  if (!verbose) {
+    SCIPsetIntParam(scip, "display/verblevel", 0);
+  }
   if (!presolve) {
     SCIPsetIntParam(scip, "presolving/milp/maxrounds", 0);
     SCIPsetIntParam(scip, "presolving/trivial/maxrounds", 0);
@@ -192,7 +197,7 @@ Rcpp::List rcpp_scip_solve(
   SCIP_SOL* sol = SCIPgetBestSol(scip);
 
   // Extract results
-  NumericVector x(n_vars);
+  Rcpp::NumericVector x(n_vars);
   double obj_val = 0;
   for (std::size_t i = 0; i < n_vars; ++i) {
     x[i] = SCIPgetSolVal(scip, sol, vars[i]);
@@ -209,7 +214,7 @@ Rcpp::List rcpp_scip_solve(
   // Exports
   return Rcpp::List::create(
     Rcpp::Named("objval") = Rcpp::wrap(obj_val),
-    Rcpp::Named("x") = Rcpp::wrap(status),
+    Rcpp::Named("x") = Rcpp::wrap(x),
     Rcpp::Named("status") = Rcpp::wrap(status)
   );
 }

@@ -8,11 +8,11 @@
 */
 
 /* .Call calls */
-extern SEXP _rscip_rcpp_scip_solve(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
+extern SEXP _rscip_rcpp_scip_solve(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
 extern SEXP _rscip_rcpp_scip_version(void);
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_rscip_rcpp_scip_solve",   (DL_FUNC) &_rscip_rcpp_scip_solve,   15},
+    {"_rscip_rcpp_scip_solve",   (DL_FUNC) &_rscip_rcpp_scip_solve,   17},
     {"_rscip_rcpp_scip_version", (DL_FUNC) &_rscip_rcpp_scip_version,  0},
     {NULL, NULL, 0}
 };

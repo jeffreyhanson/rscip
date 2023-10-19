@@ -11,12 +11,12 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // rcpp_scip_solve
-Rcpp::List rcpp_scip_solve(std::string modelsense, Rcpp::NumericVector& obj, Rcpp::NumericVector& lb, Rcpp::NumericVector& ub, Rcpp::CharacterVector& vtype, Rcpp::NumericVector& rhs, Rcpp::CharacterVector& sense, Rcpp::NumericVector& A_i, Rcpp::NumericVector& A_j, Rcpp::NumericVector& A_x, double gap, double time_limit, bool first_feasible, bool presolve, std::size_t threads);
-RcppExport SEXP _rscip_rcpp_scip_solve(SEXP modelsenseSEXP, SEXP objSEXP, SEXP lbSEXP, SEXP ubSEXP, SEXP vtypeSEXP, SEXP rhsSEXP, SEXP senseSEXP, SEXP A_iSEXP, SEXP A_jSEXP, SEXP A_xSEXP, SEXP gapSEXP, SEXP time_limitSEXP, SEXP first_feasibleSEXP, SEXP presolveSEXP, SEXP threadsSEXP) {
+Rcpp::List rcpp_scip_solve(Rcpp::CharacterVector& modelsense, Rcpp::NumericVector& obj, Rcpp::NumericVector& lb, Rcpp::NumericVector& ub, Rcpp::CharacterVector& vtype, Rcpp::NumericVector& rhs, Rcpp::CharacterVector& sense, Rcpp::NumericVector& A_i, Rcpp::NumericVector& A_j, Rcpp::NumericVector& A_x, double gap, double time_limit, bool first_feasible, bool presolve, std::size_t threads, bool verbose, std::size_t display_width);
+RcppExport SEXP _rscip_rcpp_scip_solve(SEXP modelsenseSEXP, SEXP objSEXP, SEXP lbSEXP, SEXP ubSEXP, SEXP vtypeSEXP, SEXP rhsSEXP, SEXP senseSEXP, SEXP A_iSEXP, SEXP A_jSEXP, SEXP A_xSEXP, SEXP gapSEXP, SEXP time_limitSEXP, SEXP first_feasibleSEXP, SEXP presolveSEXP, SEXP threadsSEXP, SEXP verboseSEXP, SEXP display_widthSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type modelsense(modelsenseSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector& >::type modelsense(modelsenseSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type obj(objSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type lb(lbSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type ub(ubSEXP);
@@ -31,7 +31,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type first_feasible(first_feasibleSEXP);
     Rcpp::traits::input_parameter< bool >::type presolve(presolveSEXP);
     Rcpp::traits::input_parameter< std::size_t >::type threads(threadsSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_scip_solve(modelsense, obj, lb, ub, vtype, rhs, sense, A_i, A_j, A_x, gap, time_limit, first_feasible, presolve, threads));
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< std::size_t >::type display_width(display_widthSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_scip_solve(modelsense, obj, lb, ub, vtype, rhs, sense, A_i, A_j, A_x, gap, time_limit, first_feasible, presolve, threads, verbose, display_width));
     return rcpp_result_gen;
 END_RCPP
 }

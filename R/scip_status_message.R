@@ -11,6 +11,7 @@ NULL
 #'
 #' @noRd
 scip_status_message <- function(x) {
+  if (is.null(x)) return("NOT RECOGNIZED")
   switch(
     as.character(x),
     "0" = "SCIP_STATUS_UNKNOWN",
