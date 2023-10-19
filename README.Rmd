@@ -1,0 +1,92 @@
+---
+output:
+  rmarkdown::github_document:
+    html_preview: no
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
+```
+
+```{r, include = FALSE}
+devtools::load_all()
+```
+
+# rscip: Interface to SCIP
+<!-- badges: start -->
+[![lifecycle](https://img.shields.io/badge/Lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html)
+[![R-CMD-check-Ubuntu](https://img.shields.io/github/actions/workflow/status/jeffreyhanson/rscip/R-CMD-check-ubuntu.yaml?branch=master&label=Ubuntu)](https://github.com/jeffreyhanson/rscip/actions)
+[![R-CMD-check-Windows](https://img.shields.io/github/actions/workflow/status/jeffreyhanson/rscip/R-CMD-check-windows.yaml?branch=master&label=Windows)](https://github.com/jeffreyhanson/rscip/actions)
+[![R-CMD-check-macOS](https://img.shields.io/github/actions/workflow/status/jeffreyhanson/rscip/R-CMD-check-macos.yaml?branch=master&label=macOS)](https://github.com/jeffreyhanson/rscip/actions)
+[![R-CMD-check-fedora](https://img.shields.io/github/actions/workflow/status/jeffreyhanson/rscip/R-CMD-check-fedora.yaml?branch=master&label=Fedora)](https://github.com/jeffreyhanson/rscip/actions)
+[![Documentation](https://img.shields.io/github/actions/workflow/status/jeffreyhanson/rscip/documentation.yaml?branch=master&label=Documentation)](https://github.com/jeffreyhanson/rscip/actions)
+[![Coverage Status](https://img.shields.io/codecov/c/github/jeffreyhanson/rscip?label=Coverage)](https://app.codecov.io/gh/jeffreyhanson/rscip/branch/master)
+[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/rscip)](https://CRAN.R-project.org/package=rscip)
+
+<!-- badges: end -->
+
+The _rscip_ package provides an interface to the [_SCIP_ (Solving Constraint Integer Programs)](https://www.scipopt.org/) solver. Specifically, _SCIP_ is an open-source optimization solver that can solve mixed integer programming (MILP) problems. By interfacing with the _SCIP_ solver, the _rscip_ package can be used to generate optimal solutions to optimization problems. Although _SCIP_ can also solve mixed integer non-linear programming (MINLP) problems, this functionality is not provided by the _rscip_ package.
+
+## Installation
+
+The package is not available on [The Comprehensive R Archive Network](https://cran.r-project.org/). To install this package, please use the following _R_ code to install it from the [source code repository on GitHub](https://github.com/jeffreyhanson/rscip).
+
+```{r, eval = FALSE}
+if (!require(remotes)) install.packages("remotes")
+remotes::install_github("jeffreyhanson/rscip")
+```
+
+## Usage
+
+Here we will provide a brief example showing how the package can be used to solve an optimization problem.
+
+```{r}
+# load package
+library(rscip)
+
+# define optimization problem and solve it
+#' # Mathematically define a mixed integer programming problem
+#' ## maximize:
+#' ##   1 * x + 2 * y + 0.5 * z
+#' ## subject to:
+#' ##   x + y <= 1
+#' ##   3 * x + 4 * z >= 5
+#' ##   z = 4
+#' ##  x <= 10
+#' ##  y <= 11
+#' ##  z <= 13
+#' ##  x, y, z is integer
+result <- scip_solve(
+  obj = c(1, 2, 0.5),
+  lb = c(0, 0, 0),
+  ub = c(10, 11, 13),
+  vtype = c("I", "I", "I"),
+  A = matrix(c(1, 1, 0, 3, 0, 4, 0, 0, 1), byrow = TRUE, nrow = 3),
+  sense = c("<=", ">=", "="),
+  rhs = c(1, 5, 4),
+  modelsense = "max"
+)
+
+# print solution values
+print(result$x)
+
+# print objective value
+print(result$objval)
+
+# print solver status
+print(result$status)
+```
+
+## Citation
+
+Please cite the [_SCIP_ solver](https://www.scipopt.org/) when using this _R_ package in publications.
+
+```{r, echo  = FALSE, result = "asis", comment = ""}
+citation("rscip")
+```

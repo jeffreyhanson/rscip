@@ -1,9 +1,9 @@
 #' @include internal.R
 NULL
 
-#' SCIP version
+#' \emph{SCIP} version
 #'
-#' Get the version number of the SCIP software installed.
+#' Get the version number of the \emph{SCIP} software installed.
 #'
 #' @return A `character` value containing the version number.
 #'

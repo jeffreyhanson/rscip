@@ -3,12 +3,12 @@ NULL
 
 #' Solve a mixed integer problem with \emph{SCIP}
 #'
-#' \href{https://www.scipopt.org/}{\emph{SCIP}
+#' \href{https://www.scipopt.org/}{\emph{SCIP}}
 #' (Solving Constraint Integer Programs)
 #' is an open-source mixed integer programming
 #' solver (Bestuzheva *et al.* 2021).
-#' By leveraging the \emph{SCIP} software, this function can be used to generate
-#' solutions to optimization problems.
+#' By interfacing with the \emph{SCIP} solver, this function can be used to
+#' generate optimal solutions to optimization problems.
 #'
 #' @param obj `numeric` vector of coefficients to specify the
 #' objective function. Note that arguments should have one value per decision
@@ -41,6 +41,11 @@ NULL
 #' @param sense `character` vector indicating the sense values for the
 #' constraints.
 #' Available options include `">="`, `"<="` and `"="`.
+#' Note that arguments should have one value per constraint
+#' (i.e., row in `A`).
+#'
+#' @param rhs `numeric` vector denoting the right-hand-side values sense for the
+#' constraints.
 #' Note that arguments should have one value per constraint
 #' (i.e., row in `A`).
 #'
@@ -86,17 +91,17 @@ NULL
 #' \describe{
 #'
 #' \item{x}{\code{numeric} values of the decision variables
-#' in the solution.
+#' in the solution.}
 #'
 #' \item{objval}{\code{numeric} objective value of the solution.}
 #'
 #' \item{status}{\code{character} description of the optimization process
-#' when it finished. See the Sovler Status section for more information.
+#' when it finished. See the Solver Status section for more information.}
 #'
 #' }
 #'
 #' @section Solver Status:
-#' The status of the SCIP solver indicates the stopping criteria for the
+#' The status of the \emph{SCIP} solver indicates the stopping criteria for the
 #' optimization process. This information can be helpful for interpreting
 #' the solution. For example, if the status indicates that the stopping
 #' criteria was due to a time limit, then this would suggest that the
@@ -219,7 +224,10 @@ NULL
 #' print(A_sp)
 #'
 #' ## define sense for constraints (eqns 1c--1d)
-#' sense <- c("=", "<=", "<=")
+#' sense <- c("<=", ">=", "=")
+#'
+#' ## define right-hand-side values for constraints (eqns 1c--1d)
+#' rhs <- c(1, 5, 4)
 #'
 #' ## define upper and lower bounds for decision variables (eqns 1e--1g)
 #' lb <- c(0, 0, 0)
@@ -231,8 +239,8 @@ NULL
 #' # Generate solution
 #' ## run solver (with default settings)
 #' result <- scip_solve(
-#'   obj = obj, lb = lb, ub = ub,
-#'   A = A, sense = sense, vtype = vtype,
+#'   obj = obj, lb = lb, ub = ub, vtype = vtype,
+#'   A = A, sense = sense, rhs = rhs,
 #'   modelsense = "max"
 #' )
 #'
@@ -246,8 +254,8 @@ NULL
 #'
 #' ## run solver (with customized settings)
 #' result2 <- scip_solve(
-#'   obj = obj, lb = lb, ub = ub,
-#'   A = A, sense = sense, vtype = vtype,
+#'   obj = obj, lb = lb, ub = ub, vtype = vtype,
+#'   A = A, sense = sense, rhs = rhs,
 #'   modelsense = "max",
 #'   gap = 0.2, threads = 1, time_limit = 2
 #' )

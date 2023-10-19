@@ -2,7 +2,7 @@
 % Please edit documentation in R/scip_version.R
 \name{scip_version}
 \alias{scip_version}
-\title{SCIP version}
+\title{\emph{SCIP} version}
 \usage{
 scip_version()
 }
@@ -10,7 +10,7 @@ scip_version()
 A \code{character} value containing the version number.
 }
 \description{
-Get the version number of the SCIP software installed.
+Get the version number of the \emph{SCIP} software installed.
 }
 \examples{
 # get version number

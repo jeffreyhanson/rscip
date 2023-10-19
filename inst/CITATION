@@ -1,0 +1,48 @@
+citHeader("To cite the rscip package in publications, please use:")
+
+bibentry(
+  bibtype = "techreport",
+  title = "The SCIP Optimization Suite 8.0",
+  author = c(
+    person(c("Ksenia"), "Bestuzheva"),
+    person(c("Mathieu"), "Besan{\\c{c}}on"),
+    person(c("Wei-Kun"), "Chen"),
+    person(c("Antonia"), "Chmiela"),
+    person(c("Tim"), "Donkiewicz"),
+    person(c("Jasper"), "van Doornmalen"),
+    person(c("Leon"), "Eifler"),
+    person(c("Oliver"), "Gaul"),
+    person(c("Gerald"), "Gamrath"),
+    person(c("Ambros"), "Gleixner"),
+    person(c("Leona"), "Gottwald"),
+    person(c("Christoph"), "Graczyk"),
+    person(c("Katrin"), "Halbig"),
+    person(c("Alexander"), "Hoen"),
+    person(c("Christopher"), "Hojny"),
+    person(c("Rolf"), "van der Hulst"),
+    person(c("Thorsten"), "Koch"),
+    person(c("Marco"), "L{\"u}bbecke"),
+    person(c("Stephen", "J"), "Maher"),
+    person(c("Frederic"), "Matter"),
+    person(c("Erik"), "M{\"u}hmer"),
+    person(c("Benjamin"), "M{\"u}ller"),
+    person(c("Marc", "E"), "Pfetsch"),
+    person(c("Daniel"), "Rehfeldt"),
+    person(c("Steffan"), "Schlein"),
+    person(c("Franziska"), "Schl{\"o}sser"),
+    person(c("Felipe"), "Serrano"),
+    person(c("Yuji"), "Shinano"),
+    person(c("Boro"), "Sofranac"),
+    person(c("Mark"), "Turner"),
+    person(c("Stefan"), "Vigerske"),
+    person(c("Fabian"), "Wegscheider"),
+    person(c("Philipp"), "Wellner"),
+    person(c("Dieter"), "Weninger"),
+    person(c("Jakob"), "Witzig")
+  ),
+  institution = "Optimization Online",
+  year = "2021",
+  url = "http://www.optimization-online.org/DB_HTML/2021/12/8728.html"
+)
+
+citFooter("For package version, use \"packageVersion('rscip')\"\n\n")
