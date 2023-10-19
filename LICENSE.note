@@ -1,0 +1,10 @@
+The rscip package as a whole is distributed under GNU GPL 3. The rscip package includes other open source software components. The following is a list of these components:
+
+* scip: Apache-2.0
+* gcg: Apache-2.0
+* papilo: GNU GPL 3
+* soplex: Apache-2.0
+* ug: GNU GPL 3
+* zimpl: GNU GPL 3
+
+Full copies of the license agreements used by these components are included in `inst/scipoptsuite-8.0.4.tgz`.
