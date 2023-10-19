@@ -1,0 +1,23 @@
+test_that("produces correct results", {
+  # test valid codes
+  expect_equal(scip_status_message(0), "SCIP_STATUS_UNKNOWN")
+  expect_equal(scip_status_message(1), "SCIP_STATUS_USERINTERRUPT")
+  expect_equal(scip_status_message(2), "SCIP_STATUS_NODELIMIT")
+  expect_equal(scip_status_message(3), "SCIP_STATUS_TOTALNODELIMIT")
+  expect_equal(scip_status_message(4), "SCIP_STATUS_STALLNODELIMIT")
+  expect_equal(scip_status_message(5), "SCIP_STATUS_TIMELIMIT")
+  expect_equal(scip_status_message(6), "SCIP_STATUS_MEMLIMIT")
+  expect_equal(scip_status_message(7), "SCIP_STATUS_GAPLIMIT")
+  expect_equal(scip_status_message(8), "SCIP_STATUS_SOLLIMIT")
+  expect_equal(scip_status_message(9), "SCIP_STATUS_BESTSOLLIMIT")
+  expect_equal(scip_status_message(10), "SCIP_STATUS_RESTARTLIMIT")
+  expect_equal(scip_status_message(11), "SCIP_STATUS_RESTARTLIMIT")
+  expect_equal(scip_status_message(12), "SCIP_STATUS_INFEASIBLE")
+  expect_equal(scip_status_message(13), "SCIP_STATUS_UNBOUNDED")
+  expect_equal(scip_status_message(14), "SCIP_STATUS_INFORUNBD")
+  expect_equal(scip_status_message(15), "SCIP_STATUS_TERMINATE")
+  # test invalid codes
+  expect_equal(scip_status_message(200), "NOT RECOGNIZED")
+  expect_equal(scip_status_message(NA), "NOT RECOGNIZED")
+  expect_equal(scip_status_message(NULL), "NOT RECOGNIZED")
+})
