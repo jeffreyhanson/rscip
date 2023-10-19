@@ -11,8 +11,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // rcpp_scip_solve
-Rcpp::List rcpp_scip_solve(Rcpp::CharacterVector& modelsense, Rcpp::NumericVector& obj, Rcpp::NumericVector& lb, Rcpp::NumericVector& ub, Rcpp::CharacterVector& vtype, Rcpp::NumericVector& rhs, Rcpp::CharacterVector& sense, Rcpp::NumericVector& A_i, Rcpp::NumericVector& A_j, Rcpp::NumericVector& A_x, double gap, double time_limit, bool first_feasible, bool presolve, std::size_t threads, bool verbose, std::size_t display_width);
-RcppExport SEXP _rscip_rcpp_scip_solve(SEXP modelsenseSEXP, SEXP objSEXP, SEXP lbSEXP, SEXP ubSEXP, SEXP vtypeSEXP, SEXP rhsSEXP, SEXP senseSEXP, SEXP A_iSEXP, SEXP A_jSEXP, SEXP A_xSEXP, SEXP gapSEXP, SEXP time_limitSEXP, SEXP first_feasibleSEXP, SEXP presolveSEXP, SEXP threadsSEXP, SEXP verboseSEXP, SEXP display_widthSEXP) {
+Rcpp::List rcpp_scip_solve(Rcpp::CharacterVector& modelsense, Rcpp::NumericVector& obj, Rcpp::NumericVector& lb, Rcpp::NumericVector& ub, Rcpp::CharacterVector& vtype, Rcpp::NumericVector& rhs, Rcpp::CharacterVector& sense, Rcpp::NumericVector& A_i, Rcpp::NumericVector& A_j, Rcpp::NumericVector& A_x, bool use_initial_solution, Rcpp::IntegerVector& initial_index, Rcpp::NumericVector& initial_solution, double gap, double time_limit, bool first_feasible, bool presolve, std::size_t threads, bool verbose, std::size_t display_width);
+RcppExport SEXP _rscip_rcpp_scip_solve(SEXP modelsenseSEXP, SEXP objSEXP, SEXP lbSEXP, SEXP ubSEXP, SEXP vtypeSEXP, SEXP rhsSEXP, SEXP senseSEXP, SEXP A_iSEXP, SEXP A_jSEXP, SEXP A_xSEXP, SEXP use_initial_solutionSEXP, SEXP initial_indexSEXP, SEXP initial_solutionSEXP, SEXP gapSEXP, SEXP time_limitSEXP, SEXP first_feasibleSEXP, SEXP presolveSEXP, SEXP threadsSEXP, SEXP verboseSEXP, SEXP display_widthSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -26,6 +26,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type A_i(A_iSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type A_j(A_jSEXP);
     Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type A_x(A_xSEXP);
+    Rcpp::traits::input_parameter< bool >::type use_initial_solution(use_initial_solutionSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector& >::type initial_index(initial_indexSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type initial_solution(initial_solutionSEXP);
     Rcpp::traits::input_parameter< double >::type gap(gapSEXP);
     Rcpp::traits::input_parameter< double >::type time_limit(time_limitSEXP);
     Rcpp::traits::input_parameter< bool >::type first_feasible(first_feasibleSEXP);
@@ -33,7 +36,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< std::size_t >::type threads(threadsSEXP);
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
     Rcpp::traits::input_parameter< std::size_t >::type display_width(display_widthSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_scip_solve(modelsense, obj, lb, ub, vtype, rhs, sense, A_i, A_j, A_x, gap, time_limit, first_feasible, presolve, threads, verbose, display_width));
+    rcpp_result_gen = Rcpp::wrap(rcpp_scip_solve(modelsense, obj, lb, ub, vtype, rhs, sense, A_i, A_j, A_x, use_initial_solution, initial_index, initial_solution, gap, time_limit, first_feasible, presolve, threads, verbose, display_width));
     return rcpp_result_gen;
 END_RCPP
 }

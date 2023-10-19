@@ -66,6 +66,31 @@ test_that("works with parallel processing", {
   expect_equal(x$status, "SCIP_STATUS_OPTIMAL")
 })
 
+test_that("works with initial solution", {
+  # run optimization
+  x <- scip_solve(
+    obj = c(1, 1, 2),
+    modelsense = "max",
+    lb = c(0, 0, 0),
+    ub = c(1, 1, 1),
+    rhs = c(4, 1),
+    sense = c("<=", ">="),
+    vtype = c("B", "B", "B"),
+    A = as_Matrix(
+      matrix(c(1, 2, 3, 1, 1, 0), nrow = 2, ncol = 3, byrow = TRUE),
+      "dgCMatrix"
+    ),
+    initial_solution = c(1, NA, 1),
+    verbose = FALSE
+  )
+  # tests
+  expect_type(x, "list")
+  expect_named(x, c("objval", "x", "status"))
+  expect_equal(x$objval, 3)
+  expect_equal(x$x, c(1, 0 ,1))
+  expect_equal(x$status, "SCIP_STATUS_OPTIMAL")
+})
+
 test_that("handles infeasible problems", {
   # run optimization
   x <- scip_solve(
@@ -156,6 +181,31 @@ test_that("handles continuous variables", {
   expect_true(all(x$x >= 0))
   expect_true(all(x$x <= 5))
   expect_gt(max(x$x %% 1), 0) # check all numbers aren't just integers
+})
+
+test_that("handles infeasible initial_solution", {
+  # run optimization
+  x <- scip_solve(
+    obj = c(1, 1, 2),
+    modelsense = "max",
+    lb = c(0, 0, 0),
+    ub = c(1, 1, 5),
+    rhs = c(4, 1),
+    sense = c("<=", ">="),
+    vtype = c("B", "B", "I"),
+    A = as_Matrix(
+      matrix(c(1, 2, 3, 1, 1, 0), nrow = 2, ncol = 3, byrow = TRUE),
+      "dgCMatrix"
+    ),
+    initial_solution = c(1, NA, 4),
+    verbose = FALSE
+  )
+  # tests
+  expect_type(x, "list")
+  expect_named(x, c("objval", "x", "status"))
+  expect_equal(x$objval, 3)
+  expect_equal(x$x, c(1, 0 ,1))
+  expect_equal(x$status, "SCIP_STATUS_OPTIMAL")
 })
 
 test_that("fails if constraints and obj lengths do not match", {

@@ -12,6 +12,9 @@ Rcpp::List rcpp_scip_solve(
   Rcpp::NumericVector &A_i, // constraint matrix rows
   Rcpp::NumericVector &A_j, // constraint matrix columns
   Rcpp::NumericVector &A_x, // constraint matrix coefficients
+  bool use_initial_solution,
+  Rcpp::IntegerVector &initial_index,
+  Rcpp::NumericVector &initial_solution,
   double gap = 0,
   double time_limit = 1e+20,
   bool first_feasible = false,
@@ -30,6 +33,7 @@ Rcpp::List rcpp_scip_solve(
   /// compute constants
   const std::size_t n_vars = obj.size();
   const std::size_t n_consts = rhs.size();
+  const std::size_t n_initial_vars = initial_index.size();
 
   // Build problem
   /// initialize problem
@@ -193,6 +197,27 @@ Rcpp::List rcpp_scip_solve(
     SCIPsetIntParam(scip, "presolving/maxrounds", 0);
     SCIPsetIntParam(scip, "propagating/maxrounds", 0);
     SCIPsetIntParam(scip, "propagating/maxroundsroot", 0);
+  }
+
+  // If specfiied, add initial solution
+  /// initialization
+  SCIP_SOL* initial_sol;
+  SCIP_Bool initial_stored;
+  /// create and add solution
+  if (use_initial_solution) {
+    SCIP_CALL(SCIPcreatePartialSol(scip, &initial_sol, nullptr));
+    for (std::size_t i = 0; i < n_initial_vars; ++i) {
+      SCIPsetSolVal(
+        scip,
+        initial_sol,
+        vars[initial_index[i]],
+        initial_solution[i]
+      );
+    }
+    SCIP_CALL(SCIPaddSolFree(scip, &initial_sol, &initial_stored));
+    if (!initial_stored) {
+      Rcpp::stop("`initial_solution` could not be used as a starting solution");
+    }
   }
 
   // Solve problem

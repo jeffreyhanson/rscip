@@ -71,6 +71,12 @@ NULL
 #' the returned solution may not meet the optimality gap (per `gap`).
 #' Defaults to `FALSE`.
 #'
+#' @param initial_solution `numeric` initial values
+#' for starting solution. Missing (`NA`) values can be used to indicate
+#' that the starting value for a solution should be automatically calculated.
+#' Defaults to `NULL` such that the starting solution is automatically
+#' generated.
+#'
 #' @param verbose `logical` should progress be displayed during optimization?
 #' Defaults to `TRUE`.
 #'
@@ -270,6 +276,7 @@ scip_solve <- function(obj,
                        presolve = TRUE,
                        time_limit = 1e+20,
                        first_feasible = FALSE,
+                       initial_solution = NULL,
                        verbose = TRUE) {
   # assert arguments are valid and prepare data
   ## argument classes
@@ -323,7 +330,7 @@ scip_solve <- function(obj,
     assertthat::noNA(A@x),
     msg = "`A` must not contain missing (NA) values"
   )
-  # finite values
+  ## finite values
   assertthat::assert_that(
     all(is.finite(A@x)),
     msg = "`A` must not contain non-finite (Inf) values"
@@ -343,6 +350,49 @@ scip_solve <- function(obj,
     all(sense %in% c(">=", "<=", "=")),
     msg = "`sense` must contain \">=\", \"<=\", or \"=\" values"
   )
+  ## assert valid initial solution
+  if (!is.null(initial_solution)) {
+    ## preliminary calculations
+    int_idx <- which(vtype == "I")
+    bin_idx <- which(vtype == "B")
+    ### verify sane values and dimensionality
+    assertthat::assert_that(length(initial_solution) == length(obj))
+    assertthat::assert_that(
+      all(
+        initial_solution[int_idx] == round(initial_solution[int_idx]),
+        na.rm = TRUE
+      ),
+      msg = "`initial_solution` has non-integer values for integer variables"
+    )
+    assertthat::assert_that(
+      all(
+        initial_solution[bin_idx] %in% c(0, 1, NA),
+        na.rm = TRUE
+      ),
+      msg = "`initial_solution` has non-binary values for binary variables"
+    )
+    assertthat::assert_that(
+      all(initial_solution <= ub, na.rm = TRUE),
+      msg = "`initial_solution` does not obey `ub`"
+    )
+    assertthat::assert_that(
+      all(initial_solution >= lb, na.rm = TRUE),
+      msg = "`initial_solution` does not obey `lb`"
+    )
+    use_initial_solution <- TRUE
+  } else {
+    use_initial_solution <- FALSE
+  }
+
+  # prepare arguments for initial solution
+  if (use_initial_solution) {
+    ## store indices for non-NA values
+    initial_index <- which(is.finite(initial_solution))
+    initial_solution <- initial_solution[initial_index]
+  } else {
+    initial_index <- integer()
+    initial_solution <- numeric()
+  }
 
   # extract constraint matrix in row-major format
   idx <- order(A@i)
@@ -363,6 +413,9 @@ scip_solve <- function(obj,
     A_i = A_i,
     A_j = A_j,
     A_x = A_x,
+    use_initial_solution = use_initial_solution,
+    initial_index = initial_index - 1, # N.B. convert to base-0 indexing
+    initial_solution = initial_solution,
     gap = gap,
     time_limit = time_limit,
     first_feasible = first_feasible,
