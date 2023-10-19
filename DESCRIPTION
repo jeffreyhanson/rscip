@@ -7,10 +7,8 @@ Description:
 Authors@R:
     c(person(c('Jeffrey', 'O'), 'Hanson',
         email='jeffrey.hanson@uqconnect.edu.au', role = c('aut', 'cre'),
-        comment = c(ORCID = '0000-0002-4716-6134')),
-      person(c('Joseph', 'R'), 'Bennett',
-        email='joseph.bennett@carleton.ca', role = c('aut'),
-        comment = c(ORCID = '0000-0002-3901-9513')))
+        comment = c(ORCID = '0000-0002-4716-6134'))
+    )
 Imports:
     assertthat (>= 0.2.0),
     withr (>= 2.3.0),
