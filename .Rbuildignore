@@ -28,4 +28,3 @@ pkgdown
 ^\.github$
 codecov.yml
 ^inst/debug$
-src/Makevars
