@@ -50,6 +50,12 @@ jobs:
             tbb \
             gmp \
             boost \
+            scip \
+            ampl-mp \
+            openblas \
+            openjdk \
+            pkg-config \
+            readline \
             gsl \
             git \
             cmake
