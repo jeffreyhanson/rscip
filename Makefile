@@ -21,18 +21,6 @@ readme:
 contrib:
 	R --slave -e "rmarkdown::render('CONTRIBUTING.Rmd')"
 
-vigns:
-	rm -f vignettes/*.html
-	rm -f .build.timestamp
-	rm -f vignettes/*.R
-	rm -f doc/*.html
-	rm -f doc/*.Rmd
-	rm -f inst/doc/*.html
-	rm -f inst/doc/*.Rmd
-	R --slave -e "options(rmarkdown.html_vignette.check_title = FALSE);devtools::build_vignettes()"
-	cp -R doc inst/
-	touch inst/doc/.gitkeep
-
 purl_vigns:
 	R --slave -e "lapply(dir('vignettes', '^.*\\\\.Rmd$$'), function(x) knitr::purl(file.path('vignettes', x), gsub('.Rmd', '.R', x, fixed = TRUE)))"
 	rm -f Rplots.pdf
@@ -47,12 +35,10 @@ check_vigns:
 
 quicksite:
 	R --slave -e "options(rmarkdown.html_vignette.check_title = FALSE);pkgdown::build_site(run_dont_run = TRUE, lazy = TRUE)"
-	cp -R doc inst/
 
 site:
 	R --slave -e "pkgdown::clean_site()"
 	R --slave -e "options(rmarkdown.html_vignette.check_title = FALSE);pkgdown::build_site(run_dont_run = TRUE, lazy = FALSE)"
-	cp -R doc inst/
 
 test:
 	R --slave -e "devtools::test()" > test.log 2>&1
