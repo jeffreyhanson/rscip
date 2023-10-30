@@ -17,6 +17,9 @@ Status](https://img.shields.io/codecov/c/github/jeffreyhanson/rscip?label=Covera
 
 <!-- badges: end -->
 
+**Please understand that this package is still in early development. It
+will probably not work on your computer yet.**
+
 The *rscip* package provides an interface to the [*SCIP* (Solving
 Constraint Integer Programs)](https://www.scipopt.org/) solver.
 Specifically, *SCIP* is an open-source optimization solver that can

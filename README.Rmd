@@ -31,6 +31,9 @@ devtools::load_all()
 
 <!-- badges: end -->
 
+
+**Please understand that this package is still in early development. It will probably not work on your computer yet.**
+
 The _rscip_ package provides an interface to the [_SCIP_ (Solving Constraint Integer Programs)](https://www.scipopt.org/) solver. Specifically, _SCIP_ is an open-source optimization solver that can solve mixed integer programming (MILP) problems. By interfacing with the _SCIP_ solver, the _rscip_ package can be used to generate optimal solutions to optimization problems. Although _SCIP_ can also solve mixed integer non-linear programming (MINLP) problems, this functionality is not provided by the _rscip_ package.
 
 ## Installation
