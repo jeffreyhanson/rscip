@@ -6,33 +6,48 @@ PKG_TEST_HEADER="<scip/scip.h>"
 PKG_CFLAGS=""
 PKG_LIBS=""
 
+# Find R
+: ${R_HOME=`R RHOME`}
+RSCRIPT_BIN=${R_HOME}/bin/Rscript
+if test -z "${R_HOME}"; then
+  echo "'R_HOME' could not be found!"
+  exit 1
+fi
+
 # Check if variables are found
-if [ "$SCIP_INCLUDE_DIR" ] || [ "$SCIP_CONFIG_DIR" ] || ["$SCIP_LIB_DIR"] ; then
+if [ "$SCIP_INCLUDE_DIR" ] || [ "$SCIP_CONFIG_DIR" ] || [ "$SCIP_LIB_DIR" ] ; then
   ## if found, then use these variables
   echo "Found SCIP_INCLUDE_DIR, SCIP_CONFIG_DIR, and/or SCIP_LIB_DIR!"
 elif [ "$SCIP_HOME" ] ; then
   ## if found, then use these variables
   echo "Found SCIP_HOME!"
+  ## set SCIP variables
   SCIP_INCLUDE_DIR=${SCIP_HOME}/scip/src
   SCIP_CONFIG_DIR=${SCIP_HOME}/build/scip
   SCIP_LIB_DIR=${SCIP_HOME}/build/lib
 else
   ## otherwise, compile SCIP from source and set variables
   echo "Compiling SCIP from source"
-  if test -z "${R_SCIP_LIB_DIR}"; then
-      R_SCIP_PKG_HOME=`pwd`
-      bash inst/build_scip.sh
-      cd ${R_SCIP_PKG_HOME}
-      rm -rf inst/SCIP
-      SCIP_LIB_DIR=${R_SCIP_PKG_HOME}/src/SCIPlib/lib
-      SCIP_INCLUDE_DIR=${R_SCIP_PKG_HOME}/src/SCIPlib/include
-      SCIP_CONFIG_DIR=${R_SCIP_PKG_HOME}/src/SCIPlib/config
-  fi
+  ## determine installation directory
+  R_SCIP_PKG_HOME=`pwd`
+  ###determine and create directory to install SCIP
+  R_SCIP_SRC_DIR=`${RSCRIPT_BIN} -e "cat(tools::R_user_dir('rscip'))"`
+  mkdir -p ${R_SCIP_SRC_DIR}
+  ## remove any previous installation of SCIP
+  cd ${R_SCIP_SRC_DIR}
+  rm -rf sciplib
+  ## install SCIP to user data directory
+  cd ${R_SCIP_PKG_HOME}
+  bash inst/build_scip.sh
+  ## set SCIP variables
+  SCIP_INCLUDE_DIR=${R_SCIP_SRC_DIR}/sciplib/scip/src
+  SCIP_CONFIG_DIR=${R_SCIP_SRC_DIR}/sciplib/build/scip
+  SCIP_LIB_DIR=${R_SCIP_SRC_DIR}/sciplib/build/lib
 fi
 
 # Set package compilation variables
-PKG_CFLAGS="-isystem $SCIP_INCLUDE_DIR -isystem $SCIP_CONFIG_DIR $PKG_CFLAGS"
-PKG_LIBS="-Wl,-rpath,$SCIP_LIB_DIR $SCIP_LIB_DIR/libscip.so $PKG_LIBS"
+PKG_CFLAGS="-I$SCIP_INCLUDE_DIR -I$SCIP_CONFIG_DIR $PKG_CFLAGS"
+PKG_LIBS="-L$SCIP_LIB_DIR -Wl,-rpath=$SCIP_LIB_DIR -lscip $PKG_LIBS"
 
 # For debugging
 echo "Using PKG_CFLAGS=$PKG_CFLAGS"
