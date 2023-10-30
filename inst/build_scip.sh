@@ -57,15 +57,15 @@ echo "CXX11: '${CXX11}'"
 # extract scipoptsuite
 echo ""
 echo "[EXTRACTION]"
-tar -xzf ${SCIP_SRC_FILE} -C ${R_SCIP_SRC_DIR}
-rm -f ${SCIP_SRC_FILE}
-mv ${R_SCIP_SRC_DIR}/${SCIP_SRC_DIR} ${R_SCIP_LIB_DIR}
+tar -xzf "${SCIP_SRC_FILE}" -C "${R_SCIP_SRC_DIR}"
+rm -f "${SCIP_SRC_FILE}"
+mv "${R_SCIP_SRC_DIR}/${SCIP_SRC_DIR}" "${R_SCIP_LIB_DIR}"
 
 # config makefile
 echo ""
 echo "[CONFIGURATION]"
-mkdir -p ${R_SCIP_BUILD_DIR}
-cd ${R_SCIP_BUILD_DIR}
+mkdir -p "${R_SCIP_BUILD_DIR}"
+cd "${R_SCIP_BUILD_DIR}"
 CMAKE_OPTS="-DIPOPT=off -DGMP=on -DZIMPL=off -DREADLINE=off -DTPI=tny -DCMAKE_POSITION_INDEPENDENT_CODE:bool=ON -DSHARED:bool=on"
 ${CMAKE_EXE} .. ${CMAKE_OPTS} -G "Unix Makefiles"
 
