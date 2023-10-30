@@ -85,7 +85,7 @@ endif()
 if((GIT) AND (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.git"))
    execute_process(
       COMMAND \${GIT} describe --always --dirty
-      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       OUTPUT_VARIABLE GITHASH OUTPUT_STRIP_TRAILING_WHITESPACE)
    string(REGEX REPLACE \"^.*-g\" \"\" GITHASH \${GITHASH})
    if(NOT \${GITHASH} STREQUAL \"\${GITHASH_OLD}\")
@@ -228,7 +228,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 endif()
 
 # export compilation settings to header file
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/soplex/config.h".in "${PROJECT_BINARY_DIR}/soplex/config.h" @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/soplex/config.h.in ${PROJECT_BINARY_DIR}/soplex/config.h @ONLY)
 
 configure_file(${PROJECT_SOURCE_DIR}/soplex-config.cmake.in "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/soplex-config.cmake" @ONLY)
 
