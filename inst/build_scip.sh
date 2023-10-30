@@ -61,7 +61,13 @@ mkdir -p "${R_SCIP_SRC_DIR}"
 tar -xzf "${SCIP_SRC_FILE}" -C "${R_SCIP_SRC_DIR}"
 rm -f "${SCIP_SRC_FILE}"
 mv "${R_SCIP_SRC_DIR}/${SCIP_SRC_DIR}" "${R_SCIP_LIB_DIR}"
-rm -rf "${R_SCIP_LIB_DIR}/soplex/.git"
+
+# apply patches
+echo ""
+echo "[APPLYING PATCHES]"
+## SOPLEX CMakeLists.txt
+rm -f "${R_SCIP_LIB_DIR}/soplex/CMakeLists.txt"
+cp "${R_SCIP_PKG_HOME}/inst/patches/soplex/CMakeLists.txt" "${R_SCIP_LIB_DIR}/soplex/CMakeLists.txt"
 
 # config makefile
 echo ""
