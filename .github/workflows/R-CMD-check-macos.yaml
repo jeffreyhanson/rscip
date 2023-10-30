@@ -50,6 +50,8 @@ jobs:
             tbb \
             gmp \
             boost \
+            gsl \
+            git \
             cmake
 
       - uses: r-lib/actions/setup-r-dependencies@v2
