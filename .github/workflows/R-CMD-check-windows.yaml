@@ -70,6 +70,14 @@ jobs:
         with:
           upload-snapshots: true
 
+      - name: Show log files
+        if: always()
+        run: |
+          echo "INSTALL FILE"
+          cat "D:/a/rscip/rscip/check/rscip.Rcheck/00install.out"
+
+        shell: bash
+
       - name: Show testthat output
         if: always()
         run: find check -name 'testthat.Rout*' -exec cat '{}' \; || true

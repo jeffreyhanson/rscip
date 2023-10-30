@@ -71,6 +71,14 @@ jobs:
         with:
           upload-snapshots: true
 
+      - name: Show log files
+        if: always()
+        run: |
+          echo "INSTALL LOG"
+          cat "/Users/runner/work/rscip/rscip/check/rscip.Rcheck/00install.out"
+          echo "CHECK LOG"
+          cat "/Users/runner/work/rscip/rscip/check/rscip.Rcheck/00check.log"
+
       - name: Show testthat output
         if: always()
         run: find check -name 'testthat.Rout*' -exec cat '{}' \; || true
