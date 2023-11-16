@@ -18,13 +18,13 @@ fi
 if [ "$SCIP_INCLUDE_DIR" ] || [ "$SCIP_CONFIG_DIR" ] || [ "$SCIP_LIB_DIR" ] ; then
   ## if found, then use these variables
   echo "Found SCIP_INCLUDE_DIR, SCIP_CONFIG_DIR, and/or SCIP_LIB_DIR!"
-elif [ "$SCIP_HOME" ] ; then
-  ## if found, then use these variables
-  echo "Found SCIP_HOME!"
-  ## set SCIP variables
-  SCIP_INCLUDE_DIR=${SCIP_HOME}/scip/src
-  SCIP_CONFIG_DIR=${SCIP_HOME}/build/scip
-  SCIP_LIB_DIR=${SCIP_HOME}/build/lib
+# elif [ "$SCIP_HOME" ] ; then
+#   ## if found, then use these variables
+#   echo "Found SCIP_HOME!"
+#   ## set SCIP variables
+#   SCIP_INCLUDE_DIR=${SCIP_HOME}/scip/src
+#   SCIP_CONFIG_DIR=${SCIP_HOME}/build/scip
+#   SCIP_LIB_DIR=${SCIP_HOME}/build/lib
 else
   ## otherwise, compile SCIP from source and set variables
   echo "Compiling SCIP from source"
@@ -46,8 +46,8 @@ else
 fi
 
 # Set package compilation variables
-PKG_CFLAGS="-I$SCIP_INCLUDE_DIR -I$SCIP_CONFIG_DIR $PKG_CFLAGS"
-PKG_LIBS="-L$SCIP_LIB_DIR -Wl,-rpath=$SCIP_LIB_DIR -lscip $PKG_LIBS"
+PKG_CFLAGS="-I\"$SCIP_INCLUDE_DIR\" -I\"$SCIP_CONFIG_DIR\" $PKG_CFLAGS"
+PKG_LIBS="-L\"$SCIP_LIB_DIR\" -Wl,-rpath=\"$SCIP_LIB_DIR\" -lscip $PKG_LIBS"
 
 # For debugging
 echo "Using PKG_CFLAGS=$PKG_CFLAGS"

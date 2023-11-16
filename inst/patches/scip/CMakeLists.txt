@@ -272,7 +272,7 @@ if(EXISTS \${DST})
    file(STRINGS \${DST} GITHASH_OLD)
    string(REGEX REPLACE \"#define SCIP_GITHASH \\\"(.*)\\\"\" \"\\\\1\" GITHASH_OLD \"\${GITHASH_OLD}\")
 endif()
-if((GIT) AND (EXISTS \"\${CMAKE_CURRENT_SOURCE_DIR}/.git\"))
+if((GIT) AND (EXISTS \"\${CMAKE_CURRENT_SOURCE_DIR}/.git"))
    execute_process(
       COMMAND \${GIT} describe --always --dirty
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
