@@ -60,7 +60,6 @@ PKG_CFLAGS="-I\"$SCIP_INCLUDE_DIR\" -I\"${SCIP_CONFIG_DIR}\" ${PKG_CFLAGS}"
 PKG_LIBS="-L\"${SCIP_LIB_DIR}\" -Wl,-rpath \"${SCIP_LIB_DIR}\" ${PKG_LIBS}"
 
 # For debugging
-echo "System=`uname -a`"
 echo "Using PKG_CFLAGS=$PKG_CFLAGS"
 echo "Using PKG_LIBS=$PKG_LIBS"
 

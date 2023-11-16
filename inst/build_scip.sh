@@ -1,19 +1,23 @@
 #!/bin/bash
 
+# Find MAKE
 if test -z "${MAKE}"; then MAKE=`which make` 2> /dev/null; fi
 if test -z "${MAKE}"; then MAKE=`which /Applications/Xcode.app/Contents/Developer/usr/bin/make` 2> /dev/null; fi
 
+# Find CMAKE
 if test -z "${CMAKE_EXE}"; then CMAKE_EXE=`which cmake4` 2> /dev/null; fi
 if test -z "${CMAKE_EXE}"; then CMAKE_EXE=`which cmake3` 2> /dev/null; fi
 if test -z "${CMAKE_EXE}"; then CMAKE_EXE=`which cmake2` 2> /dev/null; fi
 if test -z "${CMAKE_EXE}"; then CMAKE_EXE=`which cmake` 2> /dev/null; fi
 if test -z "${CMAKE_EXE}"; then CMAKE_EXE=`which /Applications/CMake.app/Contents/bin/cmake` 2> /dev/null; fi
 
+# Throw error if can't find CMAKE
 if test -z "${CMAKE_EXE}"; then
     echo "Could not find 'cmake'!"
     exit 1
 fi
 
+# Find R
 : ${R_HOME=`R RHOME`}
 RSCRIPT_BIN=${R_HOME}/bin/Rscript
 if test -z "${R_HOME}"; then
@@ -21,6 +25,7 @@ if test -z "${R_HOME}"; then
     exit 1
 fi
 
+# Set file paths
 R_SCIP_PKG_HOME=`pwd`
 SCIP_SRC_FILE=`find "$(pwd -P)" -name "scipopt*"`
 SCIP_SRC_DIR=`basename ${SCIP_SRC_FILE} .tgz`
@@ -28,6 +33,15 @@ R_SCIP_SRC_DIR=`${RSCRIPT_BIN} -e "cat(tools::R_user_dir('rscip'))"`
 R_SCIP_LIB_DIR=${R_SCIP_SRC_DIR}/sciplib
 R_SCIP_BUILD_DIR=${R_SCIP_SRC_DIR}/sciplib/build
 
+# Escape spaces in file paths
+R_SCIP_SRC_DIR=$( echo "$R_SCIP_SRC_DIR" | sed 's/ /\\ /g' )
+R_SCIP_LIB_DIR=$( echo "$R_SCIP_LIB_DIR" | sed 's/ /\\ /g' )
+R_SCIP_BUILD_DIR=$( echo "$R_SCIP_BUILD_DIR" | sed 's/ /\\ /g' )
+
+echo "System=`uname -a`"
+
+
+# Print file paths
 echo ""
 echo "[FILES AND FOLDERS]"
 echo "R_SCIP_PKG_HOME = '${R_SCIP_PKG_HOME}'"
