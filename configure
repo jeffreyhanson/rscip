@@ -63,13 +63,10 @@ CXX=$(${R_HOME}/bin/R CMD config CXX)
 CXXFLAGS=$(${R_HOME}/bin/R CMD config CXXFLAGS)
 CPPFLAGS=$(${R_HOME}/bin/R CMD config CPPFLAGS)
 
-echo ${CXX} -E ${CPPFLAGS} ${PKG_CFLAGS} ${CXXFLAGS}
+# echo "#include $PKG_TEST_HEADER | ${CXX} -E ${CPPFLAGS} ${PKG_CFLAGS} ${CXXFLAGS} -xc - >/dev/null 2>configure.log"
 
 # Test configuration
-echo "#include $PKG_TEST_HEADER" | ${CXX} -E ${CPPFLAGS} ${PKG_CFLAGS} ${CXXFLAGS} -xc++ - >configure.log 2>&1
-# echo "#include $PKG_TEST_HEADER" | ${CXX} -E ${CPPFLAGS} ${PKG_CFLAGS} ${CXXFLAGS} -xc++ - >/dev/null 2>&1
-
-# cat configure.log
+# echo "#include $PKG_TEST_HEADER" | ${CC} ${CPPFLAGS} ${PKG_CFLAGS} ${CFLAGS} -E -xc - >/dev/null 2>configure.log
 
 # Customize the error
 # if [ $? -ne 0 ]; then
@@ -80,9 +77,6 @@ echo "#include $PKG_TEST_HEADER" | ${CXX} -E ${CPPFLAGS} ${PKG_CFLAGS} ${CXXFLAG
 #   echo "------------------------- [END ERROR MESSAGE] -------------------------------"
 #   exit 1
 # fi
-
-# Remove log file
-rm -f configure.log
 
 # Write to Makevars
 sed -e "s|@cflags@|$PKG_CFLAGS|" -e "s|@libs@|$PKG_LIBS|" src/Makevars.in > src/Makevars
