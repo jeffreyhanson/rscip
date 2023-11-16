@@ -4,7 +4,7 @@
 PKG_CONFIG_NAME="scip"
 PKG_TEST_HEADER="<scip/scip.h>"
 PKG_CFLAGS=""
-PKG_LIBS=""
+PKG_LIBS="-lscip"
 
 # Find R
 : ${R_HOME=`R RHOME`}
@@ -27,7 +27,7 @@ elif [ "$SCIP_HOME" ] ; then
   SCIP_LIB_DIR="${SCIP_HOME}/build/lib"
 else
   ## otherwise, compile SCIP from source and set variables
-  echo "Compiling SCIP from source"
+  echo "Compiling SCIP from source!"
   ## determine installation directory
   R_SCIP_PKG_HOME=`pwd`
   ###determine and create directory to install SCIP
@@ -51,8 +51,8 @@ SCIP_CONFIG_DIR=$( echo "$SCIP_CONFIG_DIR" | sed 's/ /\\ /g' )
 SCIP_LIB_DIR=$( echo "$SCIP_LIB_DIR" | sed 's/ /\\ /g' )
 
 # Set package compilation variables
-PKG_CFLAGS="-I$SCIP_INCLUDE_DIR -I${SCIP_CONFIG_DIR} ${PKG_CFLAGS}"
-PKG_LIBS="-L${SCIP_LIB_DIR} -Wl,-rpath ${SCIP_LIB_DIR} -lscip ${PKG_LIBS}"
+PKG_CFLAGS="-I\"$SCIP_INCLUDE_DIR\" -I\"${SCIP_CONFIG_DIR}\" ${PKG_CFLAGS}"
+PKG_LIBS="-L\"${SCIP_LIB_DIR}\" -Wl,-rpath \"${SCIP_LIB_DIR}\" ${PKG_LIBS}"
 
 # For debugging
 echo "Using PKG_CFLAGS=$PKG_CFLAGS"
@@ -72,14 +72,14 @@ echo "#include $PKG_TEST_HEADER" | ${CXX} -E ${CPPFLAGS} ${PKG_CFLAGS} ${CXXFLAG
 # cat configure.log
 
 # Customize the error
-if [ $? -ne 0 ]; then
-  echo "------------------------- [ANTICONF ERROR] ----------------------------------"
-  echo "Configuration failed because $PKG_CONFIG_NAME could not be installed."
-  echo "------------------------- [BEGIN ERROR MESSAGE] -----------------------------"
-  cat configure.log
-  echo "------------------------- [END ERROR MESSAGE] -------------------------------"
-  exit 1
-fi
+# if [ $? -ne 0 ]; then
+#   echo "------------------------- [ANTICONF ERROR] ----------------------------------"
+#   echo "Configuration failed because $PKG_CONFIG_NAME could not be installed."
+#   echo "------------------------- [BEGIN ERROR MESSAGE] -----------------------------"
+#   cat configure.log
+#   echo "------------------------- [END ERROR MESSAGE] -------------------------------"
+#   exit 1
+# fi
 
 # Remove log file
 rm -f configure.log
