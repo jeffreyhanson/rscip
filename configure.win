@@ -5,6 +5,8 @@ PKG_CONFIG_NAME="scip"
 PKG_TEST_HEADER="<scip/scip.h>"
 PKG_CFLAGS=""
 PKG_LIBS="-lscip -lsoplex -lbliss -lclusol -lquadmath"
+DEP_CFLAGS=""
+DEP_LIBS="-lgmp -ltbb -lquadmath -lblas -lpthread -lgsl -lm"
 
 # Find R
 : ${R_HOME=`R RHOME`}
@@ -12,19 +14,6 @@ RSCRIPT_BIN=${R_HOME}/bin/Rscript
 if test -z "${R_HOME}"; then
   echo "'R_HOME' could not be found!"
   exit 1
-fi
-
-# Find dependencies
-## Use pkg-config if available
-pkg-config --version >/dev/null 2>&1
-if [ $? -eq 0 ]; then
-  echo "Found pkg-config, using it for dependency CFLAGS and LIBS"
-  DEP_CFLAGS="`pkg-config --cflags gmp tbb blas gsl`"
-  DEP_LIBS="`pkg-config --libs gmp tbb blas gsl`"
-else
-  echo "Couldn't find pkg-config, guessing dependency CFLAGS and LIBS"
-  DEP_CFLAGS=""
-  DEP_LIBS="-lgmp -ltbb -lquadmath -lblas -lpthread -lgsl -lgslcblas -lm"
 fi
 
 # Check if variables are found

@@ -52,7 +52,6 @@ jobs:
             boost \
             scip \
             ampl-mp \
-            openblas \
             openjdk \
             pkg-config \
             readline \
