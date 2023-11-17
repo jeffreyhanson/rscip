@@ -4,7 +4,7 @@
 PKG_CONFIG_NAME="scip"
 PKG_TEST_HEADER="<scip/scip.h>"
 PKG_CFLAGS=""
-PKG_LIBS="-lscip"
+PKG_LIBS="-lscip -lsoplex -lbliss -lclusol -lquadmath"
 
 # Find R
 : ${R_HOME=`R RHOME`}
@@ -14,45 +14,55 @@ if test -z "${R_HOME}"; then
   exit 1
 fi
 
+# Find dependencies
+## Use pkg-config if available
+pkg-config --version >/dev/null 2>&1
+if [ $? -eq 0 ]; then
+  echo "Found pkg-config, using it for dependency CFLAGS and LIBS"
+  DEP_CFLAGS="`pkg-config --cflags gmp tbb blas gsl`"
+  DEP_LIBS="`pkg-config --libs gmp tbb blas gsl`"
+else
+  echo "Couldn't find pkg-config, guessing dependency CFLAGS and LIBS"
+  DEP_CFLAGS=""
+  DEP_LIBS="-lgmp -ltbb -lquadmath -lblas -lpthread -lgsl -lgslcblas -lm"
+fi
+
 # Check if variables are found
 if [ "$SCIP_INCLUDE_DIR" ] || [ "$SCIP_CONFIG_DIR" ] || [ "$SCIP_LIB_DIR" ] ; then
   ## if found, then use these variables
   echo "Found SCIP_INCLUDE_DIR, SCIP_CONFIG_DIR, and/or SCIP_LIB_DIR!"
-elif [ "$SCIP_HOME" ] ; then
-  ## if found, then use these variables
-  echo "Found SCIP_HOME!"
-  ## set SCIP variables
-  SCIP_INCLUDE_DIR="${SCIP_HOME}/scip/src"
-  SCIP_CONFIG_DIR="${SCIP_HOME}/build/scip"
-  SCIP_LIB_DIR="${SCIP_HOME}/build/lib"
+# elif [ "$SCIP_HOME" ] ; then
+#   ## if found, then use these variables
+#   echo "Found SCIP_HOME!"
+#   ## set SCIP variables
+#   SCIP_INCLUDE_DIR="${SCIP_HOME}/scip/src"
+#   SCIP_CONFIG_DIR="${SCIP_HOME}/build/scip"
+#   SCIP_LIB_DIR="${SCIP_HOME}/build/lib"
+#   SCIP_LIB_DIR2="${SCIP_HOME}/build/papilo"
 else
   ## otherwise, compile SCIP from source and set variables
   echo "Compiling SCIP from source!"
   ## determine installation directory
   R_SCIP_PKG_HOME=`pwd`
-  ###determine and create directory to install SCIP
-  R_SCIP_SRC_DIR=`${RSCRIPT_BIN} -e "cat(tools::R_user_dir('rscip'))"`
-  mkdir -p ${R_SCIP_SRC_DIR}
-  ## remove any previous installation of SCIP
-  cd ${R_SCIP_SRC_DIR}
-  rm -rf sciplib
   ## install SCIP to user data directory
   cd ${R_SCIP_PKG_HOME}
   bash inst/build_scip.sh
   ## set SCIP variables
-  SCIP_INCLUDE_DIR="${R_SCIP_SRC_DIR}/sciplib/scip/src"
-  SCIP_CONFIG_DIR="${R_SCIP_SRC_DIR}/sciplib/build/scip"
-  SCIP_LIB_DIR="${R_SCIP_SRC_DIR}/sciplib/build/lib"
+  SCIP_INCLUDE_DIR="${R_SCIP_PKG_HOME}/sciplib/scip/src"
+  SCIP_CONFIG_DIR="${R_SCIP_PKG_HOME}/sciplib/build/scip"
+  SCIP_LIB_DIR="${R_SCIP_PKG_HOME}/sciplib/build/lib"
+  SCIP_LIB_DIR2="${R_SCIP_PKG_HOME}/sciplib/build/papilo"
 fi
 
 # Escape spaces in file paths
 SCIP_INCLUDE_DIR=$( echo "$SCIP_INCLUDE_DIR" | sed 's/ /\\ /g' )
 SCIP_CONFIG_DIR=$( echo "$SCIP_CONFIG_DIR" | sed 's/ /\\ /g' )
 SCIP_LIB_DIR=$( echo "$SCIP_LIB_DIR" | sed 's/ /\\ /g' )
+SCIP_LIB_DIR2=$( echo "$SCIP_LIB_DIR2" | sed 's/ /\\ /g' )
 
 # Set package compilation variables
-PKG_CFLAGS="-I\"$SCIP_INCLUDE_DIR\" -I\"${SCIP_CONFIG_DIR}\" ${PKG_CFLAGS}"
-PKG_LIBS="-L\"${SCIP_LIB_DIR}\" -Wl,-rpath \"${SCIP_LIB_DIR}\" ${PKG_LIBS}"
+PKG_CFLAGS="-I\"$SCIP_INCLUDE_DIR\" -I\"${SCIP_CONFIG_DIR}\" ${PKG_CFLAGS} ${DEP_CFLAGS}"
+PKG_LIBS="-L\"${SCIP_LIB_DIR}\" -L\"${SCIP_LIB_DIR2}\" ${PKG_LIBS} ${DEP_LIBS}"
 
 # For debugging
 echo "Using PKG_CFLAGS=$PKG_CFLAGS"
@@ -62,21 +72,6 @@ echo "Using PKG_LIBS=$PKG_LIBS"
 CXX=$(${R_HOME}/bin/R CMD config CXX)
 CXXFLAGS=$(${R_HOME}/bin/R CMD config CXXFLAGS)
 CPPFLAGS=$(${R_HOME}/bin/R CMD config CPPFLAGS)
-
-# echo "#include $PKG_TEST_HEADER | ${CXX} -E ${CPPFLAGS} ${PKG_CFLAGS} ${CXXFLAGS} -xc - >/dev/null 2>configure.log"
-
-# Test configuration
-# echo "#include $PKG_TEST_HEADER" | ${CC} ${CPPFLAGS} ${PKG_CFLAGS} ${CFLAGS} -E -xc - >/dev/null 2>configure.log
-
-# Customize the error
-# if [ $? -ne 0 ]; then
-#   echo "------------------------- [ANTICONF ERROR] ----------------------------------"
-#   echo "Configuration failed because $PKG_CONFIG_NAME could not be installed."
-#   echo "------------------------- [BEGIN ERROR MESSAGE] -----------------------------"
-#   cat configure.log
-#   echo "------------------------- [END ERROR MESSAGE] -------------------------------"
-#   exit 1
-# fi
 
 # Write to Makevars
 sed -e "s|@cflags@|$PKG_CFLAGS|" -e "s|@libs@|$PKG_LIBS|" src/Makevars.in > src/Makevars

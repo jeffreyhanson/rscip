@@ -50,11 +50,31 @@ jobs:
         run: |
           sudo apt update
           sudo apt-get install \
-            wget cmake g++ m4 xz-utils libgmp-dev unzip zlib1g-dev \
-            libboost-program-options-dev libboost-serialization-dev \
-            libboost-regex-dev libboost-iostreams-dev \
-            libreadline-dev pkg-config git liblapack-dev libgsl-dev flex bison \
-            libcliquer-dev gfortran file dpkg-dev libopenblas-dev rpm
+            wget \
+            pkg-config \
+            git \
+            cmake \
+            rpm \
+            dpkg-dev \
+            m4 \
+            xz-utils \
+            libgmp-dev \
+            unzip \
+            zlib1g-dev \
+            libboost-program-options-dev \
+            libboost-serialization-dev \
+            libboost-regex-dev \
+            libboost-iostreams-dev \
+            libtbb-dev \
+            libreadline-dev \
+            liblapack-dev \
+            libgsl-dev \
+            flex \
+            bison \
+            libcliquer-dev \
+            gfortran \
+            file \
+            libopenblas-dev
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           cache-version: 1

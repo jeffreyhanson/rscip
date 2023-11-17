@@ -29,7 +29,7 @@ fi
 R_SCIP_PKG_HOME=`pwd`
 SCIP_SRC_FILE=`find "$(pwd -P)" -name "scipopt*"`
 SCIP_SRC_DIR=`basename ${SCIP_SRC_FILE} .tgz`
-R_SCIP_SRC_DIR=`${RSCRIPT_BIN} -e "cat(tools::R_user_dir('rscip'))"`
+R_SCIP_SRC_DIR=`pwd`
 R_SCIP_LIB_DIR=${R_SCIP_SRC_DIR}/sciplib
 R_SCIP_BUILD_DIR=${R_SCIP_SRC_DIR}/sciplib/build
 
@@ -37,9 +37,6 @@ R_SCIP_BUILD_DIR=${R_SCIP_SRC_DIR}/sciplib/build
 R_SCIP_SRC_DIR=$( echo "$R_SCIP_SRC_DIR" | sed 's/ /\\ /g' )
 R_SCIP_LIB_DIR=$( echo "$R_SCIP_LIB_DIR" | sed 's/ /\\ /g' )
 R_SCIP_BUILD_DIR=$( echo "$R_SCIP_BUILD_DIR" | sed 's/ /\\ /g' )
-
-echo "System=`uname -a`"
-
 
 # Print file paths
 echo ""
@@ -71,7 +68,6 @@ echo "CXX11: '${CXX11}'"
 # extract scipoptsuite
 echo ""
 echo "[EXTRACTION]"
-mkdir -p "${R_SCIP_SRC_DIR}"
 tar -xzf "${SCIP_SRC_FILE}" -C "${R_SCIP_SRC_DIR}"
 rm -f "${SCIP_SRC_FILE}"
 mv "${R_SCIP_SRC_DIR}/${SCIP_SRC_DIR}" "${R_SCIP_LIB_DIR}"
@@ -79,7 +75,6 @@ mv "${R_SCIP_SRC_DIR}/${SCIP_SRC_DIR}" "${R_SCIP_LIB_DIR}"
 # apply patches
 echo ""
 echo "[APPLYING PATCHES]"
-## SOPLEX CMakeLists.txt
 rm -f "${R_SCIP_LIB_DIR}/soplex/CMakeLists.txt"
 rm -f "${R_SCIP_LIB_DIR}/scip/CMakeLists.txt"
 cp "${R_SCIP_PKG_HOME}/inst/patches/soplex/CMakeLists.txt" "${R_SCIP_LIB_DIR}/soplex/CMakeLists.txt"
@@ -90,11 +85,11 @@ echo ""
 echo "[CONFIGURATION]"
 mkdir -p "${R_SCIP_BUILD_DIR}"
 cd "${R_SCIP_BUILD_DIR}"
-CMAKE_OPTS="-DIPOPT=off -DGMP=on -DZIMPL=off -DREADLINE=off -DTPI=tny -DCMAKE_POSITION_INDEPENDENT_CODE:bool=ON -DSHARED:bool=on"
+CMAKE_OPTS="-DIPOPT=off -DGMP=on -DZIMPL=off -DREADLINE=off -DTPI=tny -DCMAKE_POSITION_INDEPENDENT_CODE:bool=ON -DSHARED:bool=off"
 ${CMAKE_EXE} .. ${CMAKE_OPTS} -G "Unix Makefiles"
 
 # build scip
 echo ""
 echo "[BUILDING]"
-MAKE_OPTS="ZLIB=false READLINE=false TPI=tny SHARED=true"
+MAKE_OPTS="ZLIB=false READLINE=false TPI=tny SHARED=false"
 ${MAKE} libscip ${MAKE_OPTS}
