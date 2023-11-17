@@ -62,7 +62,7 @@ SCIP_LIB_DIR2=$( echo "$SCIP_LIB_DIR2" | sed 's/ /\\ /g' )
 
 # If not installing on macOS, then add quadmath library
 if [ `uname` != "Darwin" ]; then
-  PKG_LIBS="${PKG_LIBS} -lquadmath"
+  PKG_LIBS="${PKG_LIBS} -lquadmath -lgfortran"
 else
   PKG_LIBS="${PKG_LIBS} -lblas"
 fi
