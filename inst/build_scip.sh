@@ -27,7 +27,7 @@ fi
 
 # Set file paths
 R_SCIP_PKG_HOME=`pwd`
-SCIP_SRC_FILE=`find "$(pwd -P)" -name "scipopt*"`
+SCIP_SRC_FILE=`find "$(pwd -P)" -name "scipopt*tgz"`
 SCIP_SRC_DIR=`basename ${SCIP_SRC_FILE} .tgz`
 R_SCIP_SRC_DIR=`pwd`
 R_SCIP_LIB_DIR=${R_SCIP_SRC_DIR}/sciplib
@@ -85,13 +85,14 @@ rm -f "${R_SCIP_LIB_DIR}/soplex/CMakeLists.txt"
 rm -f "${R_SCIP_LIB_DIR}/scip/CMakeLists.txt"
 cp "${R_SCIP_PKG_HOME}/inst/patches/soplex/CMakeLists.txt" "${R_SCIP_LIB_DIR}/soplex/CMakeLists.txt"
 cp "${R_SCIP_PKG_HOME}/inst/patches/scip/CMakeLists.txt" "${R_SCIP_LIB_DIR}/scip/CMakeLists.txt"
+cp "${R_SCIP_PKG_HOME}/inst/patches/scipoptsuite/CMakeLists.txt" "${R_SCIP_LIB_DIR}/CMakeLists.txt"
 
 # config makefile
 echo ""
 echo "[CONFIGURATION]"
 mkdir -p "${R_SCIP_BUILD_DIR}"
 cd "${R_SCIP_BUILD_DIR}"
-CMAKE_OPTS="-DIPOPT=off -DGMP=on -DZIMPL=off -DREADLINE=off -DTPI=tny -DCMAKE_POSITION_INDEPENDENT_CODE:bool=ON -DSHARED:bool=off"
+CMAKE_OPTS="-DIPOPT=off -DGMP=on -DZIMPL=off -DREADLINE=off -DTPI=tny -DCMAKE_POSITION_INDEPENDENT_CODE:bool=ON -DSHARED:bool=off -DCMAKE_C_FLAGS_INIT:STRING=-Wno-stringop-overflow -DCMAKE_CXX_FLAGS_INIT:STRING=-Wno-stringop-overflow -DCMAKE_SHARED_LINKER_FLAGS_INIT:STRING=-Wno-stringop-overflow"
 ${CMAKE_EXE} .. ${CMAKE_OPTS} -G "Unix Makefiles"
 
 # build scip
@@ -99,3 +100,7 @@ echo ""
 echo "[BUILDING]"
 MAKE_OPTS="ZLIB=false READLINE=false TPI=tny SHARED=false"
 ${MAKE} libscip ${MAKE_OPTS}
+
+# clean up
+find "${R_SCIP_LIB_DIR}" -name "Makefile" -delete
+find "${R_SCIP_LIB_DIR}" -name "CITATION.cff" -delete

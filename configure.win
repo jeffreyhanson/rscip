@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Display information
+echo "Use 'configure.win'"
+
 # Library settings
 PKG_CONFIG_NAME="scip"
 PKG_TEST_HEADER="<scip/scip.h>"
@@ -16,32 +19,18 @@ if test -z "${R_HOME}"; then
   exit 1
 fi
 
-# Check if variables are found
-if [ "$SCIP_INCLUDE_DIR" ] || [ "$SCIP_CONFIG_DIR" ] || [ "$SCIP_LIB_DIR" ] ; then
-  ## if found, then use these variables
-  echo "Found SCIP_INCLUDE_DIR, SCIP_CONFIG_DIR, and/or SCIP_LIB_DIR!"
-elif [ "$SCIP_HOME" ] ; then
-  ## if found, then use these variables
-  echo "Found SCIP_HOME!"
-  ## set SCIP variables
-  SCIP_INCLUDE_DIR="${SCIP_HOME}/scip/src"
-  SCIP_CONFIG_DIR="${SCIP_HOME}/build/scip"
-  SCIP_LIB_DIR="${SCIP_HOME}/build/lib"
-  SCIP_LIB_DIR2="${SCIP_HOME}/build/papilo"
-else
-  ## otherwise, compile SCIP from source and set variables
-  echo "Compiling SCIP from source!"
-  ## determine installation directory
-  R_SCIP_PKG_HOME=`pwd`
-  ## install SCIP to user data directory
-  cd ${R_SCIP_PKG_HOME}
-  bash inst/build_scip.sh
-  ## set SCIP variables
-  SCIP_INCLUDE_DIR="${R_SCIP_PKG_HOME}/sciplib/scip/src"
-  SCIP_CONFIG_DIR="${R_SCIP_PKG_HOME}/sciplib/build/scip"
-  SCIP_LIB_DIR="${R_SCIP_PKG_HOME}/sciplib/build/lib"
-  SCIP_LIB_DIR2="${R_SCIP_PKG_HOME}/sciplib/build/papilo"
-fi
+# compile SCIP from source and set variables
+echo "Compiling SCIP from source!"
+## determine installation directory
+R_SCIP_PKG_HOME=`pwd`
+## install SCIP to user data directory
+cd ${R_SCIP_PKG_HOME}
+bash inst/build_scip.sh
+## set SCIP variables
+SCIP_INCLUDE_DIR="${R_SCIP_PKG_HOME}/sciplib/scip/src"
+SCIP_CONFIG_DIR="${R_SCIP_PKG_HOME}/sciplib/build/scip"
+SCIP_LIB_DIR="${R_SCIP_PKG_HOME}/sciplib/build/lib"
+SCIP_LIB_DIR2="${R_SCIP_PKG_HOME}/sciplib/build/papilo"
 
 # Escape spaces in file paths
 SCIP_INCLUDE_DIR=$( echo "$SCIP_INCLUDE_DIR" | sed 's/ /\\ /g' )
@@ -69,7 +58,7 @@ CXXFLAGS=$(${R_HOME}/bin/R CMD config CXXFLAGS)
 CPPFLAGS=$(${R_HOME}/bin/R CMD config CPPFLAGS)
 
 # Write to Makevars
-sed -e "s|@cflags@|$PKG_CFLAGS|" -e "s|@libs@|$PKG_LIBS|" src/Makevars.in > src/Makevars
+sed -e "s|@cflags@|$PKG_CFLAGS|" -e "s|@libs@|$PKG_LIBS|" src/Makevars.in > src/Makevars.win
 
 # success
 exit 0

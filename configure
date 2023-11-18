@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Display information
+echo "Use 'configure'"
+
 # Library settings
 PKG_CONFIG_NAME="scip"
 PKG_TEST_HEADER="<scip/scip.h>"
@@ -31,14 +34,14 @@ fi
 if [ "$SCIP_INCLUDE_DIR" ] || [ "$SCIP_CONFIG_DIR" ] || [ "$SCIP_LIB_DIR" ] ; then
   ## if found, then use these variables
   echo "Found SCIP_INCLUDE_DIR, SCIP_CONFIG_DIR, and/or SCIP_LIB_DIR!"
-elif [ "$SCIP_HOME" ] ; then
-  ## if found, then use these variables
-  echo "Found SCIP_HOME!"
-  ## set SCIP variables
-  SCIP_INCLUDE_DIR="${SCIP_HOME}/scip/src"
-  SCIP_CONFIG_DIR="${SCIP_HOME}/build/scip"
-  SCIP_LIB_DIR="${SCIP_HOME}/build/lib"
-  SCIP_LIB_DIR2="${SCIP_HOME}/build/papilo"
+# elif [ "$SCIP_HOME" ] ; then
+#   ## if found, then use these variables
+#   echo "Found SCIP_HOME!"
+#   ## set SCIP variables
+#   SCIP_INCLUDE_DIR="${SCIP_HOME}/scip/src"
+#   SCIP_CONFIG_DIR="${SCIP_HOME}/build/scip"
+#   SCIP_LIB_DIR="${SCIP_HOME}/build/lib"
+#   SCIP_LIB_DIR2="${SCIP_HOME}/build/papilo"
 else
   ## otherwise, compile SCIP from source and set variables
   echo "Compiling SCIP from source!"
