@@ -75,6 +75,8 @@ jobs:
         run: |
           echo "INSTALL FILE"
           cat "D:/a/rscip/rscip/check/rscip.Rcheck/00install.out"
+          echo "CMAKE FILE"
+          echo "D:/a/rscip/rscip/check/rscip.Rcheck/00_pkg_src/rscip/sciplib/build/CMakeFiles/CMakeOutput.log"
 
         shell: bash
 
