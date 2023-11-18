@@ -83,7 +83,7 @@ if(PAPILO OR AUTOBUILD)
   find_package(Boost QUIET)
   # on windows we don't want to build tbb
   if(WIN32)
-     find_package(TBB 2022.2 COMPONENTS tbb tbbmalloc REQUIRED)
+     find_package(TBB 2018 COMPONENTS tbb tbbmalloc REQUIRED)
   else()
      include(papilo/cmake/Dependencies.cmake)
      find_or_download_package(
