@@ -67,7 +67,7 @@ SCIP_LIB_DIR2=$( echo "$SCIP_LIB_DIR2" | sed 's/ /\\ /g' )
 if [ `uname` != "Darwin" ]; then
   PKG_LIBS="${PKG_LIBS} -lquadmath -lgfortran"
 else
-  PKG_LIBS="${PKG_LIBS} -lblas"
+  PKG_LIBS="${PKG_LIBS} -lblas -ltbbmalloc"
 fi
 
 # Set package compilation variables
