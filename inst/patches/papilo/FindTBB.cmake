@@ -26,6 +26,8 @@ endif()
 # Define search paths based on user input and environment variables
 set(TBB_SEARCH_DIR ${TBB_LIBRARY_DIR} ${TBB_ROOT_DIR} ${TBB_DIR} ${TBB_DIR}/lib/x64 $ENV{TBB_INSTALL_DIR} $ENV{TBBROOT})
 
+message(NOTICE "TBB_SEARCH_DIR = ${TBB_SEARCH_DIR}")
+
 # Firstly search for TBB in config mode (i.e. search for TBBConfig.cmake).
 # find_package(TBB CONFIG HINTS ${TBB_SEARCH_DIR}
 #             PATH_SUFFIXES "cmake" "lib/cmake")
