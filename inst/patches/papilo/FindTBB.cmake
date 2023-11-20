@@ -107,7 +107,7 @@ if(_tbb_include_dir)
                         message(NOTICE "${_tbb_component_lib_name} dll path = ${${_tbb_component_lib_name}_dll}")
 
                         set_target_properties(TBB::${_tbb_component} PROPERTIES
-                                              IMPORTED_LOCATION_${_TBB_BUILD_MODE} "${${_tbb_component_lib_name}_dll}
+                                              IMPORTED_LOCATION_${_TBB_BUILD_MODE} "${${_tbb_component_lib_name}_dll}"
                                               )
                     elseif(APPLE)
                         find_library(${_tbb_component_lib_name}_so
