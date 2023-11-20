@@ -24,7 +24,7 @@ if(NOT TBB_DIR)
 endif()
 
 # Define search paths based on user input and environment variables
-set(TBB_SEARCH_DIR ${TBB_LIBRARY_DIR} ${TBB_ROOT_DIR} ${TBB_DIR} ${TBB_DIR}/x64 $ENV{TBB_INSTALL_DIR} $ENV{TBBROOT})
+set(TBB_SEARCH_DIR ${TBB_LIBRARY_DIR} ${TBB_ROOT_DIR} ${TBB_DIR} ${TBB_DIR}/lib/x64 $ENV{TBB_INSTALL_DIR} $ENV{TBBROOT})
 
 # Firstly search for TBB in config mode (i.e. search for TBBConfig.cmake).
 # find_package(TBB CONFIG HINTS ${TBB_SEARCH_DIR}
@@ -155,6 +155,10 @@ endif()
 unset(_tbb_include_dir CACHE)
 
 list(REMOVE_DUPLICATES TBB_IMPORTED_TARGETS)
+
+message("TBB_IMPORTED_TARGETS=${TBB_IMPORTED_TARGETS}")
+message("TBB_VERSION=${TBB_VERSION}")
+message("HANDLE_COMPONENTS=${HANDLE_COMPONENTS}")
 
 find_package_handle_standard_args(TBB
     REQUIRED_VARS TBB_IMPORTED_TARGETS
