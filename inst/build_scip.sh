@@ -44,6 +44,9 @@ SCIP_CONFIG_DIR=$( echo "$SCIP_CONFIG_DIR" | sed 's/\\/\//g' )
 SCIP_LIB_DIR=$( echo "$SCIP_LIB_DIR" | sed 's/\\/\//g' )
 SCIP_LIB_DIR2=$( echo "$SCIP_LIB_DIR2" | sed 's/\\/\//g' )
 
+# Find TBB directories
+export TBB_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file(package = 'RcppParallel'))"`
+
 # Print file paths
 echo ""
 echo "[FILES AND FOLDERS]"
@@ -70,12 +73,12 @@ echo "R_ARCH: '$R_ARCH'"
 echo "CC: '${CC}'"
 echo "CXX: '${CXX}'"
 echo "CXX11: '${CXX11}'"
+echo "TBB_DIR: '${TBB_DIR}'"
 
 # extract scipoptsuite
 echo ""
 echo "[EXTRACTION]"
 tar -xzf "${SCIP_SRC_FILE}" -C "${R_SCIP_SRC_DIR}"
-rm -f "${SCIP_SRC_FILE}"
 mv "${R_SCIP_SRC_DIR}/${SCIP_SRC_DIR}" "${R_SCIP_LIB_DIR}"
 
 # apply patches
@@ -83,8 +86,11 @@ echo ""
 echo "[APPLYING PATCHES]"
 rm -f "${R_SCIP_LIB_DIR}/soplex/CMakeLists.txt"
 rm -f "${R_SCIP_LIB_DIR}/scip/CMakeLists.txt"
+rm -f "${R_SCIP_LIB_DIR}/papilo/cmake/Modules/FindTBB.cmake"
 cp "${R_SCIP_PKG_HOME}/inst/patches/soplex/CMakeLists.txt" "${R_SCIP_LIB_DIR}/soplex/CMakeLists.txt"
 cp "${R_SCIP_PKG_HOME}/inst/patches/scip/CMakeLists.txt" "${R_SCIP_LIB_DIR}/scip/CMakeLists.txt"
+cp "${R_SCIP_PKG_HOME}/inst/patches/papilo/FindTBB.cmake" "${R_SCIP_LIB_DIR}/papilo/cmake/Modules/FindTBB.cmake"
+cp "${R_SCIP_PKG_HOME}/inst/patches/soplex/FindTBB.cmake" "${R_SCIP_LIB_DIR}/soplex/cmake/Modules/FindTBB.cmake"
 cp "${R_SCIP_PKG_HOME}/inst/patches/scipoptsuite/CMakeLists.txt" "${R_SCIP_LIB_DIR}/CMakeLists.txt"
 
 # config makefile
@@ -92,7 +98,7 @@ echo ""
 echo "[CONFIGURATION]"
 mkdir -p "${R_SCIP_BUILD_DIR}"
 cd "${R_SCIP_BUILD_DIR}"
-CMAKE_OPTS="-DIPOPT=off -DGMP=on -DZIMPL=off -DREADLINE=off -DTPI=tny -DCMAKE_POSITION_INDEPENDENT_CODE:bool=ON -DSHARED:bool=off -DCMAKE_C_FLAGS_INIT:STRING=-Wno-stringop-overflow -DCMAKE_CXX_FLAGS_INIT:STRING=-Wno-stringop-overflow -DCMAKE_SHARED_LINKER_FLAGS_INIT:STRING=-Wno-stringop-overflow -DTBB_DIR=\"C:/rtools43/x86_64-w64-mingw32.static.posix/lib/cmake/TBB\""
+CMAKE_OPTS="-DIPOPT=off -DGMP=on -DZIMPL=off -DREADLINE=off -DTPI=tny -DCMAKE_POSITION_INDEPENDENT_CODE:bool=ON -DSHARED:bool=off -DCMAKE_C_FLAGS_INIT:STRING=-Wno-stringop-overflow -DCMAKE_CXX_FLAGS_INIT:STRING=-Wno-stringop-overflow -DCMAKE_SHARED_LINKER_FLAGS_INIT:STRING=-Wno-stringop-overflow -DTBB_DIR=${TBB_DIR} -DTBB_ROOT_DIR=${TBB_ROOT_DIR}"
 ${CMAKE_EXE} .. ${CMAKE_OPTS} -G "Unix Makefiles"
 
 # build scip

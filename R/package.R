@@ -13,6 +13,7 @@ NULL
 # define imports
 #' @import Matrix
 #' @importFrom Rcpp evalCpp
+#' @importFrom RcppParallel LdFlags
 NULL
 
 # setup Rcpp integration
