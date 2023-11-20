@@ -90,7 +90,6 @@ rm -f "${R_SCIP_LIB_DIR}/papilo/cmake/Modules/FindTBB.cmake"
 cp "${R_SCIP_PKG_HOME}/inst/patches/soplex/CMakeLists.txt" "${R_SCIP_LIB_DIR}/soplex/CMakeLists.txt"
 cp "${R_SCIP_PKG_HOME}/inst/patches/scip/CMakeLists.txt" "${R_SCIP_LIB_DIR}/scip/CMakeLists.txt"
 cp "${R_SCIP_PKG_HOME}/inst/patches/papilo/FindTBB.cmake" "${R_SCIP_LIB_DIR}/papilo/cmake/Modules/FindTBB.cmake"
-cp "${R_SCIP_PKG_HOME}/inst/patches/soplex/FindTBB.cmake" "${R_SCIP_LIB_DIR}/soplex/cmake/Modules/FindTBB.cmake"
 cp "${R_SCIP_PKG_HOME}/inst/patches/scipoptsuite/CMakeLists.txt" "${R_SCIP_LIB_DIR}/CMakeLists.txt"
 
 # config makefile

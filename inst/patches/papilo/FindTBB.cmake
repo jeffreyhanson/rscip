@@ -101,11 +101,16 @@ if(_tbb_include_dir)
                             HINTS ${TBB_SEARCH_DIR}
                             PATHS ${TBB_DEFAULT_SEARCH_DIR} ${ADDITIONAL_LIB_DIRS}
                             PATH_SUFFIXES ${TBB_LIB_PATH_SUFFIXES})
+
+                          message(NOTICE "${_tbb_component_lib_name}_lib path = "${${_tbb_component_lib_name}_lib}")
+
                         find_file(${_tbb_component_lib_name}_dll
                             NAMES ${_tbb_component_lib_name}.dll
                             HINTS ${TBB_SEARCH_DIR}
                             PATHS ${TBB_DEFAULT_SEARCH_DIR} ${ADDITIONAL_LIB_DIRS}
                             PATH_SUFFIXES ${TBB_LIB_PATH_SUFFIXES})
+
+                        message(NOTICE "${_tbb_component_lib_name} dll path = "${${_tbb_component_lib_name}_dll}")
 
                         set_target_properties(TBB::${_tbb_component} PROPERTIES
                                               IMPORTED_LOCATION_${_TBB_BUILD_MODE} "${${_tbb_component_lib_name}_dll}"
