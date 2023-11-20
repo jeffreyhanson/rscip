@@ -92,12 +92,20 @@ cp "${R_SCIP_PKG_HOME}/inst/patches/scip/CMakeLists.txt" "${R_SCIP_LIB_DIR}/scip
 cp "${R_SCIP_PKG_HOME}/inst/patches/papilo/FindTBB.cmake" "${R_SCIP_LIB_DIR}/papilo/cmake/Modules/FindTBB.cmake"
 cp "${R_SCIP_PKG_HOME}/inst/patches/scipoptsuite/CMakeLists.txt" "${R_SCIP_LIB_DIR}/CMakeLists.txt"
 
+
+echo "ls ${TBB_DIR}"
+echo `ls ${TBB_DIR}`
+echo "ls ${TBB_DIR}/lib"
+echo `ls ${TBB_DIR}/lib`
+echo "ls ${TBB_DIR}/lib/x64"
+echo `ls ${TBB_DIR}/lib/x64`
+
 # config makefile
 echo ""
 echo "[CONFIGURATION]"
 mkdir -p "${R_SCIP_BUILD_DIR}"
 cd "${R_SCIP_BUILD_DIR}"
-CMAKE_OPTS="-DIPOPT=off -DGMP=on -DZIMPL=off -DREADLINE=off -DTPI=tny -DCMAKE_POSITION_INDEPENDENT_CODE:bool=ON -DSHARED:bool=off -DCMAKE_C_FLAGS_INIT:STRING=-Wno-stringop-overflow -DCMAKE_CXX_FLAGS_INIT:STRING=-Wno-stringop-overflow -DCMAKE_SHARED_LINKER_FLAGS_INIT:STRING=-Wno-stringop-overflow -DTBB_DIR=\"${TBB_DIR}\" -DTBB_ROOT_DIR=\"${TBB_DIR}\""
+CMAKE_OPTS="-DIPOPT=off -DGMP=on -DZIMPL=off -DREADLINE=off -DTPI=tny -DCMAKE_POSITION_INDEPENDENT_CODE:bool=ON -DSHARED:bool=off -DCMAKE_C_FLAGS_INIT:STRING=-Wno-stringop-overflow -DCMAKE_CXX_FLAGS_INIT:STRING=-Wno-stringop-overflow -DCMAKE_SHARED_LINKER_FLAGS_INIT:STRING=-Wno-stringop-overflow -DTBB_DIR=${TBB_DIR} -DTBB_ROOT_DIR=${TBB_DIR}"
 ${CMAKE_EXE} .. ${CMAKE_OPTS} -G "Unix Makefiles"
 
 # build scip
