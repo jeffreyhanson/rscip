@@ -130,7 +130,7 @@ if(_tbb_include_dir)
                                               )
                     endif()
 
-                    if (${_tbb_component_lib_name}_lib AND ${_tbb_component_lib_name}_dll OR ${_tbb_component_lib_name}_so)
+                    if (${_tbb_component_lib_name}_dll OR ${_tbb_component_lib_name}_so)
                         set_property(TARGET TBB::${_tbb_component} APPEND PROPERTY IMPORTED_CONFIGURATIONS ${_TBB_BUILD_MODE})
                         list(APPEND TBB_IMPORTED_TARGETS TBB::${_tbb_component})
                         set(TBB_${_tbb_component}_FOUND 1)
