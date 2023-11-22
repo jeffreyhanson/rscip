@@ -26,8 +26,6 @@ endif()
 # Define search paths based on user input and environment variables
 set(TBB_SEARCH_DIR ${TBB_LIBRARY_DIR} ${TBB_ROOT_DIR} ${TBB_DIR} ${TBB_DIR}/lib/x64 $ENV{TBB_INSTALL_DIR} $ENV{TBBROOT})
 
-message(NOTICE "TBB_SEARCH_DIR = ${TBB_SEARCH_DIR}")
-
 # Firstly search for TBB in config mode (i.e. search for TBBConfig.cmake).
 # find_package(TBB CONFIG HINTS ${TBB_SEARCH_DIR}
 #             PATH_SUFFIXES "cmake" "lib/cmake")
@@ -104,8 +102,6 @@ if(_tbb_include_dir)
                             PATHS ${TBB_DEFAULT_SEARCH_DIR} ${ADDITIONAL_LIB_DIRS}
                             PATH_SUFFIXES ${TBB_LIB_PATH_SUFFIXES})
 
-                        message(NOTICE "${_tbb_component_lib_name} dll path = ${${_tbb_component_lib_name}_dll}")
-
                         set_target_properties(TBB::${_tbb_component} PROPERTIES
                                               IMPORTED_LOCATION_${_TBB_BUILD_MODE} "${${_tbb_component_lib_name}_dll}"
                                               )
@@ -153,10 +149,6 @@ endif()
 unset(_tbb_include_dir CACHE)
 
 list(REMOVE_DUPLICATES TBB_IMPORTED_TARGETS)
-
-message("TBB_IMPORTED_TARGETS=${TBB_IMPORTED_TARGETS}")
-message("TBB_VERSION=${TBB_VERSION}")
-message("HANDLE_COMPONENTS=${HANDLE_COMPONENTS}")
 
 find_package_handle_standard_args(TBB
     REQUIRED_VARS TBB_IMPORTED_TARGETS

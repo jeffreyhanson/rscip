@@ -47,7 +47,6 @@ jobs:
       - name: Install system dependencies
         run: |
           brew install \
-            tbb \
             gmp \
             boost \
             scip \
@@ -55,6 +54,7 @@ jobs:
             openjdk \
             pkg-config \
             readline \
+            openblas \
             gsl \
             git \
             cmake

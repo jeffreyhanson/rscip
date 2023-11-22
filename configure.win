@@ -19,6 +19,16 @@ if test -z "${R_HOME}"; then
   exit 1
 fi
 
+
+# Unpack BLAS files
+R_SCIP_PKG_HOME=`pwd`
+BLAS_SRC_FILE=`find "$(pwd -P)" -name "OpenBLAS*zip"`
+BLAS_DIR="${R_SCIP_PKG_HOME}/openblas"
+mkdir -p ${BLAS_SRC_DIR}
+unzip "${BLAS_SRC_FILE}" -d "${BLAS_DIR}"
+BLAS_INCLUDE_DIR="${BLAS_DIR}/include"
+BLAS_LIB_DIR="${BLAS_DIR}/lib"
+
 # compile SCIP from source and set variables
 echo "Compiling SCIP from source!"
 ## determine installation directory
@@ -47,6 +57,8 @@ SCIP_LIB_DIR=$( echo "$SCIP_LIB_DIR" | sed 's/ /\\ /g' )
 SCIP_LIB_DIR2=$( echo "$SCIP_LIB_DIR2" | sed 's/ /\\ /g' )
 TBB_INCLUDE_DIR=$( echo "$TBB_INCLUDE_DIR" | sed 's/ /\\ /g' )
 TBB_LIB_DIR=$( echo "$TBB_LIB_DIR" | sed 's/ /\\ /g' )
+BLAS_INCLUDE_DIR=$( echo "$BLAS_INCLUDE_DIR" | sed 's/ /\\ /g' )
+BLAS_LIB_DIR=$( echo "$BLAS_LIB_DIR" | sed 's/ /\\ /g' )
 
 # Normalize slashes in file paths
 SCIP_INCLUDE_DIR=$( echo "$SCIP_INCLUDE_DIR" | sed 's/\\/\//g' )
@@ -55,10 +67,14 @@ SCIP_LIB_DIR=$( echo "$SCIP_LIB_DIR" | sed 's/\\/\//g' )
 SCIP_LIB_DIR2=$( echo "$SCIP_LIB_DIR2" | sed 's/\\/\//g' )
 TBB_INCLUDE_DIR=$( echo "$TBB_INCLUDE_DIR" | sed 's/\\/\//g' )
 TBB_LIB_DIR=$( echo "$TBB_LIB_DIR" | sed 's/\\/\//g' )
+BLAS_INCLUDE_DIR=$( echo "$BLAS_INCLUDE_DIR" | sed 's/\\/\//g' )
+BLAS_LIB_DIR=$( echo "$BLAS_LIB_DIR" | sed 's/\\/\//g' )
 
-# Set TBB compilation variables
+# Set external library compilation variables
 TBB_CFLAGS="-I\"${TBB_INCLUDE_DIR}\""
 TBB_LIBS="-L\"${TBB_LIB_DIR}\" -ltbb -ltbbmalloc"
+BLAS_CFLAGS="-I\"${BLAS_INCLUDE_DIR}\""
+BLAS_LIBS="-L\"${BLAS_LIB_DIR}\" -lopenblas"
 
 # Set package compilation variables
 PKG_CFLAGS="-I\"$SCIP_INCLUDE_DIR\" -I\"${SCIP_CONFIG_DIR}\" ${PKG_CFLAGS} ${DEP_CFLAGS} ${TBB_CFLAGS}"

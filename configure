@@ -9,6 +9,13 @@ PKG_TEST_HEADER="<scip/scip.h>"
 PKG_CFLAGS=""
 PKG_LIBS="-lscip -lsoplex -lbliss -lclusol"
 
+# Determine host operating system
+if [ `uname` = "Darwin" ]; then
+  HOST_OS="macOS"
+else
+  HOST_OS="linux"
+fi
+
 # Find R
 : ${R_HOME=`R RHOME`}
 RSCRIPT_BIN=${R_HOME}/bin/Rscript
@@ -18,7 +25,7 @@ if test -z "${R_HOME}"; then
 fi
 
 # Find dependencies
-## Use pkg-config if available
+## use pkg-config if available
 pkg-config --version >/dev/null 2>&1
 if [ $? -eq 0 ]; then
   echo "Found pkg-config, using it for dependency CFLAGS and LIBS"
@@ -27,23 +34,49 @@ if [ $? -eq 0 ]; then
   DEP_LIBS="`pkg-config --libs gmp blas gsl`"
 else
   echo "Couldn't find pkg-config, guessing dependency CFLAGS and LIBS"
-  PKG_CONFIG="TRUE"
+  PKG_CONFIG="FALSE"
   DEP_CFLAGS=""
   DEP_LIBS="-lgmp -lquadmath -lblas -lpthread -lgsl -lgslcblas -lm"
+fi
+
+# add in platform specific libraries
+if [ $HOST_OS = "linux" ]; then
+  DEP_LIBS="${DEP_LIBS} -lquadmath -lgfortran"
+else
+  DEP_LIBS="${DEP_LIBS} -lblas"
+fi
+
+## add TBB dependency
+if [ $HOST_OS = "linux" ]; then
+  echo "On Linux, using system version of TBB library"
+  pkg-config --version >/dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    echo "  found pkg-config, using it for TBB library CFLAGS and LIBS"
+    TBB_CFLAGS="`pkg-config --cflags tbb`"
+    TBB_LIBS="`pkg-config --libs tbb`"
+  else
+    echo "  couldn't find pkg-config, guessing TBB library CFLAGS and LIBS"
+    TBB_CFLAGS=""
+    TBB_LIBS="-ltbb -ltbbmalloc"
+  fi
+else
+  ## display message
+  echo "On macOS, using RcppParallel for TBB library"
+  ## find TBB paths
+  TBB_INCLUDE_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file('include', package = 'RcppParallel'))"`
+  TBB_LIB_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file('lib', package = 'RcppParallel'))"`
+  ## escape paths
+  TBB_CFLAGS=$( echo "$TBB_CFLAGS" | sed 's/ /\\ /g' )
+  TBB_LIBS=$( echo "$TBB_LIBS" | sed 's/ /\\ /g' )
+  ## set TBB compiler variables
+  TBB_CFLAGS="-I\"${TBB_INCLUDE_DIR}\""
+  TBB_LIBS="-L\"${TBB_LIB_DIR}\" -ltbb -ltbbmalloc"
 fi
 
 # Check if variables are found
 if [ "$SCIP_INCLUDE_DIR" ] || [ "$SCIP_CONFIG_DIR" ] || [ "$SCIP_LIB_DIR" ] ; then
   ## if found, then use these variables
   echo "Found SCIP_INCLUDE_DIR, SCIP_CONFIG_DIR, and/or SCIP_LIB_DIR!"
-  ## set SCIP variables
-  if [ $PKG_CONFIG="TRUE" ]; then
-    TBB_CFLAGS="`pkg-config --cflags tbb`"
-    TBB_LIBS="`pkg-config --libs tbb`"
-  else
-    echo "pkg-config is required when using SCIP_INCLUDE_DIR, SCIP_CONFIG_DIR, and/or SCIP_LIB_DIR"
-    exit 1
-  fi
 # elif [ "$SCIP_HOME" ] ; then
 #   ## if found, then use these variables
 #   echo "Found SCIP_HOME!"
@@ -52,13 +85,6 @@ if [ "$SCIP_INCLUDE_DIR" ] || [ "$SCIP_CONFIG_DIR" ] || [ "$SCIP_LIB_DIR" ] ; th
 #   SCIP_CONFIG_DIR="${SCIP_HOME}/build/scip"
 #   SCIP_LIB_DIR="${SCIP_HOME}/build/lib"
 #   SCIP_LIB_DIR2="${SCIP_HOME}/build/papilo"
-#   if [ $PKG_CONFIG="TRUE" ]; then
-#     TBB_CFLAGS="`pkg-config --cflags tbb`"
-#     TBB_LIBS="`pkg-config --libs tbb`"
-#   else
-#     echo "pkg-config is required when using SCIP_HOME"
-#     exit 1
-#   fi
 else
   ## otherwise, compile SCIP from source and set variables
   echo "Compiling SCIP from source!"
@@ -72,15 +98,6 @@ else
   SCIP_CONFIG_DIR="${R_SCIP_PKG_HOME}/sciplib/build/scip"
   SCIP_LIB_DIR="${R_SCIP_PKG_HOME}/sciplib/build/lib"
   SCIP_LIB_DIR2="${R_SCIP_PKG_HOME}/sciplib/build/papilo"
-  ## Find TBB paths
-  TBB_INCLUDE_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file('include', package = 'RcppParallel'))"`
-  TBB_LIB_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file('lib', package = 'RcppParallel'))"`
-  if [ -d "${TBB_LIB_DIR}/x64" ]; then
-    TBB_LIB_DIR="${TBB_LIB_DIR}/x64"
-  fi
-  ## set TBB compiler variables
-  TBB_CFLAGS="-I\"${TBB_INCLUDE_DIR}\""
-  TBB_LIBS="-L\"${TBB_LIB_DIR}\" -ltbb -ltbbmalloc"
 fi
 
 # Escape spaces in file paths
@@ -88,15 +105,6 @@ SCIP_INCLUDE_DIR=$( echo "$SCIP_INCLUDE_DIR" | sed 's/ /\\ /g' )
 SCIP_CONFIG_DIR=$( echo "$SCIP_CONFIG_DIR" | sed 's/ /\\ /g' )
 SCIP_LIB_DIR=$( echo "$SCIP_LIB_DIR" | sed 's/ /\\ /g' )
 SCIP_LIB_DIR2=$( echo "$SCIP_LIB_DIR2" | sed 's/ /\\ /g' )
-TBB_CFLAGS=$( echo "$TBB_CFLAGS" | sed 's/ /\\ /g' )
-TBB_LIBS=$( echo "$TBB_LIBS" | sed 's/ /\\ /g' )
-
-# If not installing on macOS, then add quadmath library
-if [ `uname` != "Darwin" ]; then
-  PKG_LIBS="${PKG_LIBS} -lquadmath -lgfortran"
-else
-  PKG_LIBS="${PKG_LIBS} -lblas"
-fi
 
 # Set package compilation variables
 PKG_CFLAGS="-I\"$SCIP_INCLUDE_DIR\" -I\"${SCIP_CONFIG_DIR}\" ${PKG_CFLAGS} ${TBB_CFLAGS} ${DEP_CFLAGS}"
