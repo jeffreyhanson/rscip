@@ -9,7 +9,7 @@ PKG_TEST_HEADER="<scip/scip.h>"
 PKG_CFLAGS=""
 PKG_LIBS="-lscip -lsoplex -lbliss -lclusol"
 DEP_CFLAGS=""
-DEP_LIBS="-lgmp -lquadmath -lblas -lgfortran -lpthread -lgsl -lm -lz"
+DEP_LIBS="-lgmp -lblas -lpthread -lgfortran -lgsl -lquadmath -lm -lz"
 
 # Find R
 : ${R_HOME=`R RHOME`}
@@ -18,7 +18,6 @@ if test -z "${R_HOME}"; then
   echo "'R_HOME' could not be found!"
   exit 1
 fi
-
 
 # Unpack BLAS files
 R_SCIP_PKG_HOME=`pwd`
