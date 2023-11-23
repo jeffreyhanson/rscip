@@ -122,7 +122,7 @@ if [ $TBB_RCPPPARALLEL = "TRUE" ]; then
 fi
 if [ -d "${R_SCIP_PKG_HOME}/openblas" ]; then
   BLAS_DIR="${R_SCIP_PKG_HOME}/openblas"
-  CMAKE_OPTS="${CMAKE_OPTS} -DCMAKE_PREFIX_PATH=\"${BLAS_DIR}\" -DBLA_VENDOR=OpenBLAS"
+  CMAKE_OPTS="${CMAKE_OPTS} -DCMAKE_PREFIX_PATH=${BLAS_DIR}/lib -DBLA_VENDOR=OpenBLAS"
 fi
 
 echo ""
