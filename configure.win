@@ -7,9 +7,9 @@ echo "Use 'configure.win'"
 PKG_CONFIG_NAME="scip"
 PKG_TEST_HEADER="<scip/scip.h>"
 PKG_CFLAGS=""
-PKG_LIBS="-lscip -lsoplex -lbliss -lclusol -lquadmath"
+PKG_LIBS="-lscip -lsoplex -lbliss -lclusol"
 DEP_CFLAGS=""
-DEP_LIBS="-lgmp -lquadmath -lblas -lpthread -lgsl -lm"
+DEP_LIBS="-lgmp -lquadmath -lblas -lgfortran -lpthread -lgsl -lm"
 
 # Find R
 : ${R_HOME=`R RHOME`}
