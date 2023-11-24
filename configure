@@ -81,6 +81,7 @@ else
     TBB_INCLUDE_DIR="${BREW_TBB_LIB_DIR}/include"
     if [ -d "${TBB_INCLUDE_DIR}/oneapi" ]; then
       TBB_INCLUDE_DIR="${TBB_INCLUDE_DIR}/oneapi"
+    fi
     if [ ! -d "${TBB_LIB_DIR}" ]; then
       echo "  couldn't TBB_LIB_DIR directory"
       exit 1
