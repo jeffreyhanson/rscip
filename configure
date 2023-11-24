@@ -137,7 +137,7 @@ SCIP_LIB_DIR2=$( echo "$SCIP_LIB_DIR2" | sed 's/ /\\ /g' )
 
 # Set package compilation variables
 PKG_CFLAGS="-I\"$SCIP_INCLUDE_DIR\" -I\"${SCIP_CONFIG_DIR}\" ${PKG_CFLAGS} ${TBB_CFLAGS} ${DEP_CFLAGS}"
-PKG_LIBS="-L\"${SCIP_LIB_DIR}\" -L\"${SCIP_LIB_DIR2}\" ${PKG_LIBS} -Wl,--no-undefined ${TBB_LIBS} ${DEP_LIBS}"
+PKG_LIBS="-L\"${SCIP_LIB_DIR}\" -L\"${SCIP_LIB_DIR2}\" ${PKG_LIBS} ${TBB_LIBS} ${DEP_LIBS}"
 
 # For debugging
 echo "Using PKG_CFLAGS=$PKG_CFLAGS"
