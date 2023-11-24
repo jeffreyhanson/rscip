@@ -33,8 +33,13 @@ pkg-config --version >/dev/null 2>&1
 if [ $? -eq 0 ]; then
   echo "Found pkg-config, using it for dependency CFLAGS and LIBS"
   PKG_CONFIG="TRUE"
-  DEP_CFLAGS="`pkg-config --cflags gmp gsl zlib`"
-  DEP_LIBS="`pkg-config --libs gmp gsl zlib`"
+  if [ $HOST_OS = "linux"]; then
+    DEP_CFLAGS="`pkg-config --cflags gmp blas gsl zlib`"
+    DEP_LIBS="`pkg-config --libs gmp blas gsl zlib`"
+  else
+    DEP_CFLAGS="`pkg-config --cflags gmp gsl zlib`"
+    DEP_LIBS="`pkg-config --libs gmp gsl zlib`"
+  fi
 else
   echo "Couldn't find pkg-config, guessing dependency CFLAGS and LIBS"
   PKG_CONFIG="FALSE"
