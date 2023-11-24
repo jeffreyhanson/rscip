@@ -79,7 +79,7 @@ else
     ## find directory containing library files
     TBB_LIB_DIR="${BREW_TBB_LIB_DIR}/lib"
     TBB_INCLUDE_DIR="${BREW_TBB_LIB_DIR}/include"
-    if [ -d "${TBB_INCLUDE_DIR}/oneapi" ]
+    if [ -d "${TBB_INCLUDE_DIR}/oneapi" ]; then
       TBB_INCLUDE_DIR="${TBB_INCLUDE_DIR}/oneapi"
     if [ ! -d "${TBB_LIB_DIR}" ]; then
       echo "  couldn't TBB_LIB_DIR directory"
