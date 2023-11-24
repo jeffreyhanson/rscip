@@ -33,13 +33,13 @@ pkg-config --version >/dev/null 2>&1
 if [ $? -eq 0 ]; then
   echo "Found pkg-config, using it for dependency CFLAGS and LIBS"
   PKG_CONFIG="TRUE"
-  DEP_CFLAGS="`pkg-config --cflags gmp blas gsl zlib`"
-  DEP_LIBS="`pkg-config --libs gmp blas gsl zlib`"
+  DEP_CFLAGS="`pkg-config --cflags gmp gsl zlib`"
+  DEP_LIBS="`pkg-config --libs gmp gsl zlib`"
 else
   echo "Couldn't find pkg-config, guessing dependency CFLAGS and LIBS"
   PKG_CONFIG="FALSE"
   DEP_CFLAGS=""
-  DEP_LIBS="-lgmp -lpthread -lgsl -lblas -lgslcblas -lm -lz"
+  DEP_LIBS="-lpthread -lgsl -lblas -lgslcblas -lm -lz -lgmp"
 fi
 
 # add in platform specific libraries
