@@ -25,6 +25,18 @@ if test -z "${R_HOME}"; then
     exit 1
 fi
 
+# Determine host operating system
+OS_TYPE=`"${R_HOME}/bin/Rscript" -e "cat(.Platform[['OS.type']])"`
+if [ $OS_TYPE = "unix" ]; then
+  if [ `uname` = "Darwin" ]; then
+    HOST_OS="macOS"
+  else
+    HOST_OS="linux"
+  fi
+else
+  HOST_OS="windows"
+fi
+
 # Set file paths
 R_SCIP_PKG_HOME=`pwd`
 SCIP_SRC_FILE=`find "$(pwd -P)" -name "scipopt*tgz"`
@@ -46,26 +58,15 @@ SCIP_LIB_DIR2=$( echo "$SCIP_LIB_DIR2" | sed 's/\\/\//g' )
 
 # Find TBB directories
 # Determine TBB installation
-echo "Looking for TBB installation.."
-if [ `uname` = "Darwin" ]; then
-  ## macOS
-  echo " searching in HomeBrew installation"
-  ### find TBB homebew installation
+echo "Determining TBB installation.."
+if [ $HOST_OS = "macOS" ]; then
+  echo " using HomeBrew installation"
   export TBB_DIR=`brew --prefix tbb`
-  ### reset directory
-  cd ${R_SCIP_PKG_HOME}
+elif [ $HOST_OS = "linux" ]; then
+    echo " using system installation"
 else
-  pkg-config --version >/dev/null 2>&1
-  if [ $? -eq 0 ]; then
-    ## Linux
-    echo " assuming is installed on system"
-    ### use system libraries
-  else
-    ## Windows
-    ### use RcppParallel
-    echo " searching in RcppParallel package"
-    export TBB_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file(package = 'RcppParallel'))"`
-  fi
+  echo " using RcppParallel package"
+  export TBB_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file(package = 'RcppParallel'))"`
 fi
 
 # Print file paths
@@ -88,6 +89,7 @@ export LDFLAGS=`"${R_HOME}/bin/R" CMD config LDFLAGS`
 
 echo ""
 echo "[SYSTEM]"
+echo "HOST_OS: '${HOST_OS}'"
 echo "CMAKE VERSION: '`${CMAKE_EXE} --version | head -n 1`'"
 echo "arch: '$(arch)'"
 echo "R_ARCH: '$R_ARCH'"
