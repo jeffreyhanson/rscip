@@ -123,7 +123,7 @@ echo "[CONFIGURATION]"
 mkdir -p "${R_SCIP_BUILD_DIR}"
 cd "${R_SCIP_BUILD_DIR}"
 CMAKE_OPTS="-DIPOPT=off -DLUSOL=on -DGMP=on -DZIMPL=off -DREADLINE=off -DTPI=tny -DCMAKE_POSITION_INDEPENDENT_CODE:bool=ON -DSHARED:bool=off -DCMAKE_C_FLAGS_INIT:STRING=-Wno-stringop-overflow -DCMAKE_CXX_FLAGS_INIT:STRING=-Wno-stringop-overflow -DCMAKE_SHARED_LINKER_FLAGS_INIT:STRING=-Wno-stringop-overflow"
-if [ ! -z $TBB_DIR]; then
+if [ ! -z $TBB_DIR ]; then
   CMAKE_OPTS="${CMAKE_OPTS} -DTBB_DIR=${TBB_DIR} -DTBB_ROOT_DIR=${TBB_DIR}"
 fi
 if [ -d "${R_SCIP_PKG_HOME}/openblas" ]; then
