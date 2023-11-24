@@ -51,19 +51,7 @@ if [ `uname` = "Darwin" ]; then
   ## macOS
   echo " searching in HomeBrew installation"
   ### find TBB homebew installation
-  BREW_TBB_LIB_DIR=`brew --prefix tbb`
-  cd ${BREW_TBB_LIB_DIR}
-  tree .
-  ### find directory containing library files
-  TBB_LIB_DIR=`find "$(pwd -P)" -name libtbb.so -printf '%h\n'`
-  if [ -z "${TBB_LIB_DIR}" ]; then
-    TBB_LIB_DIR=`find "$(pwd -P)" -name libtbb.dynlib -printf '%h\n'`
-  fi
-  if [ -z "${TBB_LIB_DIR}" ]; then
-    echo "  couldn't TBB library directory"
-    exit 1
-  fi
-  export TBB_DIR=`dirname $TBB_LIB_DIR`
+  export TBB_DIR=`brew --prefix tbb`
   ### reset directory
   cd ${R_SCIP_PKG_HOME}
 else

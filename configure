@@ -77,18 +77,16 @@ else
     cd ${BREW_TBB_LIB_DIR}
     tree .
     ## find directory containing library files
-    TBB_LIB_DIR=`find "$(pwd -P)" -name libtbb.so -printf '%h\n'`
-    if [ -z "${TBB_LIB_DIR}" ]; then
-      TBB_LIB_DIR=`find "$(pwd -P)" -name libtbb.dynlib -printf '%h\n'`
-    fi
-    if [ -z "${TBB_LIB_DIR}" ]; then
-      echo "  couldn't TBB library directory"
+    TBB_LIB_DIR="${BREW_TBB_LIB_DIR}/lib"
+    TBB_INCLUDE_DIR="${BREW_TBB_LIB_DIR}/include"
+    if [ -d "${TBB_INCLUDE_DIR}/oneapi" ]
+      TBB_INCLUDE_DIR="${TBB_INCLUDE_DIR}/oneapi"
+    if [ ! -d "${TBB_LIB_DIR}" ]; then
+      echo "  couldn't TBB_LIB_DIR directory"
       exit 1
     fi
-    ## find directory containing include files
-    TBB_INCLUDE_DIR=`find "$(pwd -P)" -name tbb.h -printf '%h\n' | dirname`
-    if [ -z "${TBB_LIB_DIR}" ]; then
-      echo "  couldn't TBB include directory"
+    if [ ! -d "${TBB_INCLUDE_DIR}" ]; then
+      echo "  couldn't TBB_INCLUDE_DIR directory"
       exit 1
     fi
     ## escape file paths
@@ -97,7 +95,6 @@ else
     ## set TBB compiler variables
     TBB_CFLAGS="-I\"${TBB_INCLUDE_DIR}\""
     TBB_LIBS="-L\"${TBB_LIB_DIR}\" -ltbb -ltbbmalloc"
-    # TBB_LIBS="-Wl,--no-as-needed -L\"${TBB_LIB_DIR}\" -ltbb -ltbbmalloc"
     ## reset directory
     cd ${R_SCIP_PKG_HOME}
   else
