@@ -57,7 +57,9 @@ jobs:
             openblas \
             gsl \
             git \
-            cmake
+            cmake \
+            tbb \
+            tree
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:

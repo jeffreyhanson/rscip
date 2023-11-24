@@ -45,7 +45,40 @@ SCIP_LIB_DIR=$( echo "$SCIP_LIB_DIR" | sed 's/\\/\//g' )
 SCIP_LIB_DIR2=$( echo "$SCIP_LIB_DIR2" | sed 's/\\/\//g' )
 
 # Find TBB directories
-export TBB_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file(package = 'RcppParallel'))"`
+# Determine TBB installation
+echo "Looking for TBB installation.."
+if [ `uname` = "Darwin" ]; then
+  ## macOS
+  echo " searching in HomeBrew installation"
+  ### find TBB homebew installation
+  BREW_TBB_LIB_DIR=`brew --prefix tbb`
+  cd ${BREW_TBB_LIB_DIR}
+  tree .
+  ### find directory containing library files
+  TBB_LIB_DIR=`find "$(pwd -P)" -name libtbb.so -printf '%h\n'`
+  if [ -z "${TBB_LIB_DIR}" ]; then
+    TBB_LIB_DIR=`find "$(pwd -P)" -name libtbb.dynlib -printf '%h\n'`
+  fi
+  if [ -z "${TBB_LIB_DIR}" ]; then
+    echo "  couldn't TBB library directory"
+    exit 1
+  fi
+  export TBB_DIR=`dirname $TBB_LIB_DIR`
+  ### reset directory
+  cd ${R_SCIP_PKG_HOME}
+else
+  pkg-config --version >/dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    ## Linux
+    echo " assuming is installed on system"
+    ### use system libraries
+  else
+    ## Windows
+    ### use RcppParallel
+    echo " searching in RcppParallel package"
+    export TBB_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file(package = 'RcppParallel'))"`
+  fi
+fi
 
 # Print file paths
 echo ""
@@ -65,21 +98,6 @@ export CFLAGS=`"${R_HOME}/bin/R" CMD config CFLAGS`
 export CPPFLAGS=`"${R_HOME}/bin/R" CMD config CPPFLAGS`
 export LDFLAGS=`"${R_HOME}/bin/R" CMD config LDFLAGS`
 
-# Determine TBB installation
-if [ `uname` = "Darwin" ]; then
-  ## macOS
-  TBB_RCPPPARALLEL="TRUE"
-else
-  pkg-config --version >/dev/null 2>&1
-  if [ $? -eq 0 ]; then
-    ## Linux
-    TBB_RCPPPARALLEL="FALSE"
-  else
-    ## Windows
-    TBB_RCPPPARALLEL="TRUE"
-  fi
-fi
-
 echo ""
 echo "[SYSTEM]"
 echo "CMAKE VERSION: '`${CMAKE_EXE} --version | head -n 1`'"
@@ -88,10 +106,10 @@ echo "R_ARCH: '$R_ARCH'"
 echo "CC: '${CC}'"
 echo "CXX: '${CXX}'"
 echo "CXX11: '${CXX11}'"
-if [ $TBB_RCPPPARALLEL = "TRUE" ]; then
-  echo "Using RcppParallel for TBB"
+if [ ! -z $TBB_DIR ]; then
+  echo "TBB_DIR: '${TBB_DIR}'"
 else
-  echo "Using system version for TBB"
+  echo "TBB_DIR: NOT SET"
 fi
 
 # extract scipoptsuite
@@ -117,7 +135,7 @@ echo "[CONFIGURATION]"
 mkdir -p "${R_SCIP_BUILD_DIR}"
 cd "${R_SCIP_BUILD_DIR}"
 CMAKE_OPTS="-DIPOPT=off -DLUSOL=on -DGMP=on -DZIMPL=off -DREADLINE=off -DTPI=tny -DCMAKE_POSITION_INDEPENDENT_CODE:bool=ON -DSHARED:bool=off -DCMAKE_C_FLAGS_INIT:STRING=-Wno-stringop-overflow -DCMAKE_CXX_FLAGS_INIT:STRING=-Wno-stringop-overflow -DCMAKE_SHARED_LINKER_FLAGS_INIT:STRING=-Wno-stringop-overflow"
-if [ $TBB_RCPPPARALLEL = "TRUE" ]; then
+if [ ! -z $TBB_DIR]; then
   CMAKE_OPTS="${CMAKE_OPTS} -DTBB_DIR=${TBB_DIR} -DTBB_ROOT_DIR=${TBB_DIR}"
 fi
 if [ -d "${R_SCIP_PKG_HOME}/openblas" ]; then

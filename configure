@@ -9,6 +9,9 @@ PKG_TEST_HEADER="<scip/scip.h>"
 PKG_CFLAGS=""
 PKG_LIBS="-lscip -lsoplex -lbliss -lclusol"
 
+# Determine installation directory
+R_SCIP_PKG_HOME=`pwd`
+
 # Determine host operating system
 if [ `uname` = "Darwin" ]; then
   HOST_OS="macOS"
@@ -30,20 +33,20 @@ pkg-config --version >/dev/null 2>&1
 if [ $? -eq 0 ]; then
   echo "Found pkg-config, using it for dependency CFLAGS and LIBS"
   PKG_CONFIG="TRUE"
-  DEP_CFLAGS="`pkg-config --cflags gmp blas gsl`"
-  DEP_LIBS="`pkg-config --libs gmp blas gsl`"
+  DEP_CFLAGS="`pkg-config --cflags gmp blas gsl zlib`"
+  DEP_LIBS="`pkg-config --libs gmp blas gsl zlib`"
 else
   echo "Couldn't find pkg-config, guessing dependency CFLAGS and LIBS"
   PKG_CONFIG="FALSE"
   DEP_CFLAGS=""
-  DEP_LIBS="-lgmp -lquadmath -lblas -lpthread -lgsl -lgslcblas -lm"
+  DEP_LIBS="-lgmp -lpthread -lgsl -lblas -lgslcblas -lm -lz"
 fi
 
 # add in platform specific libraries
 if [ $HOST_OS = "linux" ]; then
-  DEP_LIBS="${DEP_LIBS} -lquadmath -lgfortran"
+  DEP_LIBS="${DEP_LIBS} -lgfortran -lquadmath -fPIC"
 else
-  DEP_LIBS="${DEP_LIBS} -lblas"
+  DEP_LIBS="${DEP_LIBS} -lquadmath -fPIC"
 fi
 
 ## add TBB dependency
@@ -61,16 +64,46 @@ if [ $HOST_OS = "linux" ]; then
   fi
 else
   ## display message
-  echo "On macOS, using RcppParallel for TBB library"
+  echo "On macOS, using homebrew for TBB library"
   ## find TBB paths
-  TBB_INCLUDE_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file('include', package = 'RcppParallel'))"`
-  TBB_LIB_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file('lib', package = 'RcppParallel'))"`
-  ## escape paths
-  TBB_CFLAGS=$( echo "$TBB_CFLAGS" | sed 's/ /\\ /g' )
-  TBB_LIBS=$( echo "$TBB_LIBS" | sed 's/ /\\ /g' )
-  ## set TBB compiler variables
-  TBB_CFLAGS="-I\"${TBB_INCLUDE_DIR}\""
-  TBB_LIBS="-L\"${TBB_LIB_DIR}\" -ltbb -ltbbmalloc"
+  # TBB_INCLUDE_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file('include', package = 'RcppParallel'))"`
+  # TBB_LIB_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file('lib', package = 'RcppParallel'))"`
+
+  ## find TBB paths
+  brew --prefix >/dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    ## find TBB homebew installation
+    BREW_TBB_LIB_DIR=`brew --prefix tbb`
+    cd ${BREW_TBB_LIB_DIR}
+    tree .
+    ## find directory containing library files
+    TBB_LIB_DIR=`find "$(pwd -P)" -name libtbb.so -printf '%h\n'`
+    if [ -z "${TBB_LIB_DIR}" ]; then
+      TBB_LIB_DIR=`find "$(pwd -P)" -name libtbb.dynlib -printf '%h\n'`
+    fi
+    if [ -z "${TBB_LIB_DIR}" ]; then
+      echo "  couldn't TBB library directory"
+      exit 1
+    fi
+    ## find directory containing include files
+    TBB_INCLUDE_DIR=`find "$(pwd -P)" -name tbb.h -printf '%h\n' | dirname`
+    if [ -z "${TBB_LIB_DIR}" ]; then
+      echo "  couldn't TBB include directory"
+      exit 1
+    fi
+    ## escape file paths
+    TBB_INCLUDE_DIR=$( echo "$TBB_INCLUDE_DIR" | sed 's/ /\\ /g' )
+    TBB_LIB_DIR=$( echo "$TBB_LIB_DIR" | sed 's/ /\\ /g' )
+    ## set TBB compiler variables
+    TBB_CFLAGS="-I\"${TBB_INCLUDE_DIR}\""
+    TBB_LIBS="-L\"${TBB_LIB_DIR}\" -ltbb -ltbbmalloc"
+    # TBB_LIBS="-Wl,--no-as-needed -L\"${TBB_LIB_DIR}\" -ltbb -ltbbmalloc"
+    ## reset directory
+    cd ${R_SCIP_PKG_HOME}
+  else
+    echo "  couldn't find Homebrew"
+    exit 1
+  fi
 fi
 
 # Check if variables are found
@@ -88,8 +121,6 @@ if [ "$SCIP_INCLUDE_DIR" ] || [ "$SCIP_CONFIG_DIR" ] || [ "$SCIP_LIB_DIR" ] ; th
 else
   ## otherwise, compile SCIP from source and set variables
   echo "Compiling SCIP from source!"
-  ## determine installation directory
-  R_SCIP_PKG_HOME=`pwd`
   ## install SCIP to user data directory
   cd ${R_SCIP_PKG_HOME}
   bash inst/build_scip.sh
@@ -108,7 +139,7 @@ SCIP_LIB_DIR2=$( echo "$SCIP_LIB_DIR2" | sed 's/ /\\ /g' )
 
 # Set package compilation variables
 PKG_CFLAGS="-I\"$SCIP_INCLUDE_DIR\" -I\"${SCIP_CONFIG_DIR}\" ${PKG_CFLAGS} ${TBB_CFLAGS} ${DEP_CFLAGS}"
-PKG_LIBS="-L\"${SCIP_LIB_DIR}\" -L\"${SCIP_LIB_DIR2}\" ${PKG_LIBS} ${TBB_LIBS} ${DEP_LIBS}"
+PKG_LIBS="-L\"${SCIP_LIB_DIR}\" -L\"${SCIP_LIB_DIR2}\" ${PKG_LIBS} -Wl,--no-undefined ${TBB_LIBS} ${DEP_LIBS}"
 
 # For debugging
 echo "Using PKG_CFLAGS=$PKG_CFLAGS"

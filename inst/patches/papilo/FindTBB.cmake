@@ -24,7 +24,8 @@ if(NOT TBB_DIR)
 endif()
 
 # Define search paths based on user input and environment variables
-set(TBB_SEARCH_DIR ${TBB_LIBRARY_DIR} ${TBB_ROOT_DIR} ${TBB_DIR} ${TBB_DIR}/lib/x64 $ENV{TBB_INSTALL_DIR} $ENV{TBBROOT})
+
+set(TBB_SEARCH_DIR ${TBB_LIBRARY_DIR} ${TBB_ROOT_DIR} ${TBB_DIR} ${TBB_DIR}/lib ${TBB_DIR}/lib/x64 $ENV{TBB_INSTALL_DIR} $ENV{TBBROOT})
 
 # Firstly search for TBB in config mode (i.e. search for TBBConfig.cmake).
 # find_package(TBB CONFIG HINTS ${TBB_SEARCH_DIR}
@@ -96,34 +97,65 @@ if(_tbb_include_dir)
                     set(_tbb_component_lib_name ${_tbb_component}${_TBB_${_TBB_BUILD_MODE}_SUFFIX})
 
                     if(WIN32)
-                        find_file(${_tbb_component_lib_name}_dll
-                            NAMES ${_tbb_component_lib_name}.dll
-                            HINTS ${TBB_SEARCH_DIR}
-                            PATHS ${TBB_DEFAULT_SEARCH_DIR} ${ADDITIONAL_LIB_DIRS}
-                            PATH_SUFFIXES ${TBB_LIB_PATH_SUFFIXES})
+                        if (NOT TBB_DIR)
+                          find_file(${_tbb_component_lib_name}_dll
+                              NAMES ${_tbb_component_lib_name}.dll
+                              HINTS ${TBB_SEARCH_DIR}
+                              PATHS ${TBB_DEFAULT_SEARCH_DIR} ${ADDITIONAL_LIB_DIRS}
+                              PATH_SUFFIXES ${TBB_LIB_PATH_SUFFIXES})
+                        else()
+                          find_file(${_tbb_component_lib_name}_dll
+                              NAMES ${_tbb_component_lib_name}.dll
+                              HINTS ${TBB_SEARCH_DIR}
+                              PATH_SUFFIXES ${TBB_LIB_PATH_SUFFIXES}
+                              NO_DEFAULT_PATH)
+                        endif()
 
                         set_target_properties(TBB::${_tbb_component} PROPERTIES
                                               IMPORTED_LOCATION_${_TBB_BUILD_MODE} "${${_tbb_component_lib_name}_dll}"
                                               )
                     elseif(APPLE)
-                        find_library(${_tbb_component_lib_name}_so
-                            NAMES lib${_tbb_component_lib_name}.so.12 lib${_tbb_component_lib_name}.12.dylib lib${_tbb_component_lib_name}.dylib
-                            HINTS ${TBB_SEARCH_DIR}
-                            PATHS ${ADDITIONAL_LIB_DIRS} /usr/local/Cellar/
-                            PATH_SUFFIXES ${TBB_LIB_PATH_SUFFIXES})
+                        if (NOT TBB_DIR)
+                          find_library(${_tbb_component_lib_name}_so
+                              NAMES lib${_tbb_component_lib_name}.so lib${_tbb_component_lib_name}.so.12 lib${_tbb_component_lib_name}.12.dylib lib${_tbb_component_lib_name}.dylib
+                              HINTS ${TBB_SEARCH_DIR}
+                              PATHS ${ADDITIONAL_LIB_DIRS} /usr/local/Cellar/
+                              PATH_SUFFIXES ${TBB_LIB_PATH_SUFFIXES})
+                        else()
+                          find_library(${_tbb_component_lib_name}_so
+                              NAMES lib${_tbb_component_lib_name}.so lib${_tbb_component_lib_name}.so.12 lib${_tbb_component_lib_name}.12.dylib lib${_tbb_component_lib_name}.dylib
+                              HINTS ${TBB_SEARCH_DIR}
+                              PATH_SUFFIXES ${TBB_LIB_PATH_SUFFIXES}
+                              NO_DEFAULT_PATH)
+                        endif()
 
                         set_target_properties(TBB::${_tbb_component} PROPERTIES
                                               IMPORTED_LOCATION_${_TBB_BUILD_MODE} "${${_tbb_component_lib_name}_so}"
                                               )
                     else() # Linux etc.
-                        find_library(${_tbb_component_lib_name}_so lib${_tbb_component_lib_name}.so.12 lib${_tbb_component_lib_name}.12.dylib lib${_tbb_component_lib_name}.so.2
-                            HINTS ${TBB_SEARCH_DIR}
-                            PATHS ${ADDITIONAL_LIB_DIRS} ${TBB_DEFAULT_SEARCH_DIR}
-                            PATH_SUFFIXES ${TBB_LIB_PATH_SUFFIXES})
-
+                        if (NOT TBB_DIR)
+                          find_library(${_tbb_component_lib_name}_so
+                          NAMES lib${_tbb_component_lib_name}.so lib${_tbb_component_lib_name}.so.12 lib${_tbb_component_lib_name}.12.dylib lib${_tbb_component_lib_name}.so.2
+                              HINTS ${TBB_SEARCH_DIR}
+                              PATHS ${ADDITIONAL_LIB_DIRS} ${TBB_DEFAULT_SEARCH_DIR}
+                              PATH_SUFFIXES ${TBB_LIB_PATH_SUFFIXES})
+                        else()
+                          find_library(${_tbb_component_lib_name}_so
+                          NAMES lib${_tbb_component_lib_name}.so lib${_tbb_component_lib_name}.so.12 lib${_tbb_component_lib_name}.12.dylib lib${_tbb_component_lib_name}.so.2
+                              HINTS ${TBB_SEARCH_DIR}
+                              PATH_SUFFIXES ${TBB_LIB_PATH_SUFFIXES}
+                              NO_DEFAULT_PATH)
+                        endif()
                         set_target_properties(TBB::${_tbb_component} PROPERTIES
                                               IMPORTED_LOCATION_${_TBB_BUILD_MODE} "${${_tbb_component_lib_name}_so}"
                                               )
+                    endif()
+
+                    if (${_tbb_component_lib_name}_dll)
+                      message(NOTICE "Found TBB::${_tbb_component}: ${${_tbb_component_lib_name}_dll}")
+                    endif()
+                    if (${_tbb_component_lib_name}_so)
+                      message(NOTICE "Found TBB::${_tbb_component}: ${${_tbb_component_lib_name}_so}")
                     endif()
 
                     if (${_tbb_component_lib_name}_dll OR ${_tbb_component_lib_name}_so)
