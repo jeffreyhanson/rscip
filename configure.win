@@ -32,7 +32,7 @@ fi
 # Unpack TBB files
 R_SCIP_PKG_HOME=`pwd`
 TBB_SRC_FILE=`find "$(pwd -P)" -name "oneapi*zip"`
-unzip "${TBB_SRC_FILE}" .
+unzip "${TBB_SRC_FILE}" "${R_SCIP_PKG_HOME}"
 TBB_SRC_DIR=`find "$(pwd -P)" -maxdepth 1  -type d -name "*oneapi*"`
 TBB_DIR="${R_SCIP_PKG_HOME}/tbb"
 TBB_INCLUDE_DIR="${TBB_DIR}/include"
