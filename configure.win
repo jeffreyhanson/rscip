@@ -40,7 +40,7 @@ TBB_LIB_DIR="${TBB_DIR}/lib"
 mkdir -p ${TBB_INCLUDE_DIR}
 cp -R ${TBB_SRC_DIR}/include/oneapi/* ${TBB_INCLUDE_DIR}
 mkdir -p ${TBB_LIB_DIR}
-cp -R ${TBB_SRC_DIR}/lib/intel64/vc14/* ${TBB_LIB_DIR}
+cp -R ${TBB_SRC_DIR}/lib/intel64/vc14_uwp/* ${TBB_LIB_DIR}
 
 # compile SCIP from source and set variables
 echo "Compiling SCIP from source!"
