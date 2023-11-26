@@ -62,11 +62,11 @@ SCIP_LIB_DIR="${R_SCIP_PKG_HOME}/sciplib/build/lib"
 SCIP_LIB_DIR2="${R_SCIP_PKG_HOME}/sciplib/build/papilo"
 
 # Find TBB paths
-TBB_INCLUDE_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file('include', package = 'RcppParallel'))"`
-TBB_LIB_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file('lib', package = 'RcppParallel'))"`
-if [ -d "${TBB_LIB_DIR}/x64" ]; then
-  TBB_LIB_DIR="${TBB_LIB_DIR}/x64"
-fi
+# TBB_INCLUDE_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file('include', package = 'RcppParallel'))"`
+# TBB_LIB_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file('lib', package = 'RcppParallel'))"`
+# if [ -d "${TBB_LIB_DIR}/x64" ]; then
+#   TBB_LIB_DIR="${TBB_LIB_DIR}/x64"
+# fi
 
 # Escape spaces in file paths
 SCIP_INCLUDE_DIR=$( echo "$SCIP_INCLUDE_DIR" | sed 's/ /\\ /g' )
