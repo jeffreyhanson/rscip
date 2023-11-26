@@ -121,7 +121,8 @@ if(_tbb_include_dir)
                         endif()
 
                         message(NOTICE "TBB_SEARCH_DIR=${TBB_SEARCH_DIR}")
-                        message(NOTICE "Found TBB::${_tbb_component}: ${${_tbb_component_lib_name}_dll}")
+                        message(NOTICE "Found DLL TBB::${_tbb_component}: ${${_tbb_component_lib_name}_dll}")
+                        message(NOTICE "Found LIB TBB::${_tbb_component}: ${${_tbb_component_lib_name}_lib}")
 
                         set_target_properties(TBB::${_tbb_component} PROPERTIES
                                               IMPORTED_LOCATION_${_TBB_BUILD_MODE} "${${_tbb_component_lib_name}_dll}"

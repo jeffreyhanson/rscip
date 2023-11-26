@@ -43,6 +43,10 @@ mkdir -p ${TBB_LIB_DIR}
 cp -R ${TBB_SRC_DIR}/lib/intel64/vc14_uwp/* ${TBB_LIB_DIR}
 cp -R ${TBB_SRC_DIR}/redist/intel64/vc14_uwp/* ${TBB_LIB_DIR}
 
+
+echo "TBB_LIB_DIR=${TBB_LIB_DIR}"
+ls -la ${TBB_LIB_DIR}
+
 # compile SCIP from source and set variables
 echo "Compiling SCIP from source!"
 ## determine installation directory
