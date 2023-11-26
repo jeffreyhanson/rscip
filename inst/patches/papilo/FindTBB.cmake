@@ -99,22 +99,23 @@ if(_tbb_include_dir)
                     if(WIN32)
                         if (NOT TBB_DIR)
                           find_library(${_tbb_component_lib_name}_lib
-                            NAMES ${_tbb_component_lib_name}12.lib ${_tbb_component_lib_name}
+                            NAMES ${_tbb_component_lib_name}12.lib ${_tbb_component_lib_name}.lib ${_tbb_component_lib_name}
                             HINTS ${TBB_SEARCH_DIR}
                             PATHS ${TBB_DEFAULT_SEARCH_DIR} ${ADDITIONAL_LIB_DIRS}
                             PATH_SUFFIXES ${TBB_LIB_PATH_SUFFIXES})
                           find_file(${_tbb_component_lib_name}_dll
-                              NAMES ${_tbb_component_lib_name}.dll
+                              NAMES ${_tbb_component_lib_name}.dll ${_tbb_component_lib_name}12.dll
                               HINTS ${TBB_SEARCH_DIR}
                               PATHS ${TBB_DEFAULT_SEARCH_DIR} ${ADDITIONAL_LIB_DIRS}
                               PATH_SUFFIXES ${TBB_LIB_PATH_SUFFIXES})
                         else()
                           find_library(${_tbb_component_lib_name}_lib
-                            NAMES ${_tbb_component_lib_name}12.lib ${_tbb_component_lib_name}
+                            NAMES ${_tbb_component_lib_name}12.lib ${_tbb_component_lib_name}.lib
+                            ${_tbb_component_lib_name}
                             HINTS ${TBB_SEARCH_DIR}
                             PATH_SUFFIXES ${TBB_LIB_PATH_SUFFIXES})
                           find_file(${_tbb_component_lib_name}_dll
-                              NAMES ${_tbb_component_lib_name}12.dll
+                              NAMES ${_tbb_component_lib_name}.dll ${_tbb_component_lib_name}12.dll
                               HINTS ${TBB_SEARCH_DIR}
                               PATH_SUFFIXES ${TBB_LIB_PATH_SUFFIXES}
                               NO_DEFAULT_PATH)
