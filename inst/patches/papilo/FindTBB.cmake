@@ -105,7 +105,7 @@ if(_tbb_include_dir)
                               PATH_SUFFIXES ${TBB_LIB_PATH_SUFFIXES})
                         else()
                           find_file(${_tbb_component_lib_name}_dll
-                              NAMES ${_tbb_component_lib_name}.dll
+                              NAMES ${_tbb_component_lib_name}.tbb
                               HINTS ${TBB_SEARCH_DIR}
                               PATH_SUFFIXES ${TBB_LIB_PATH_SUFFIXES}
                               NO_DEFAULT_PATH)
