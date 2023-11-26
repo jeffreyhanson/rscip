@@ -65,8 +65,10 @@ if [ $HOST_OS = "macOS" ]; then
 elif [ $HOST_OS = "linux" ]; then
     echo " using system installation"
 else
-  echo " using RcppParallel package"
-  export TBB_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file(package = 'RcppParallel'))"`
+  # echo " using RcppParallel package"
+  # export TBB_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file(package = 'RcppParallel'))"`
+  echo " using built-in installation"
+  export TBB_DIR="${R_SCIP_PKG_HOME}/tbb/lib"
 fi
 
 # Print file paths
