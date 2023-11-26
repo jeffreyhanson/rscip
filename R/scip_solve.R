@@ -189,7 +189,7 @@ NULL
 #' Rehfeldt D., Schlein S., Schlösser F., Serrano F., Shinano Y., Sofranac B.,
 #' Turner M, Vigerske S.,  Wegscheider F., Wellner P., Weninger D., and
 #' Witzig J. (2021) The SCIP Optimization Suite 8.0. Available at Optimization
-#' Online and as ZIB-Report 21-41. <http://www.optimization-online.org/DB_HTML/2021/12/8728.html>
+#' Online and as ZIB-Report 21-41. <https://optimization-online.org/DB_HTML/2021/12/8728.html>
 #'
 #' @examples
 #' \dontrun{

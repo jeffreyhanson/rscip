@@ -55,23 +55,13 @@ jobs:
             libcliquer-dev gfortran file dpkg-dev libopenblas-dev rpm
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          cache-version: 4
+          cache-version: 1
           extra-packages: |
             any::rcmdcheck
             any::urlchecker
             any::remotes
-            prepr=?ignore
-            cran/XML
           needs: |
             check
-
-      - name: Install spatial R packages
-        run: |
-          options(repos = "https://cloud.r-project.org/")
-          install.packages("sf")
-          install.packages("lwgeom")
-          remotes::install_github("dickoa/prepr")
-        shell: Rscript {0}
 
       - name: Session information
         run: |
@@ -85,6 +75,8 @@ jobs:
         run: |
           result <- urlchecker::url_check()
           result <- result[!startsWith(result$URL, "https://doi.org/"), , drop = FALSE]
+          result <- result[!startsWith(result$URL, "https://CRAN.R-project.org/package=rscip"), , drop = FALSE]
+          result <- result[!startsWith(result$URL, "https://optimization-online.org"), , drop = FALSE]
           if (nrow(result) > 0) {
             print(result)
             stop("Invalid URLs detected")

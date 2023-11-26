@@ -1,10 +1,23 @@
 #!/bin/sh
 
+# Display information
+echo "Use 'configure'"
+
 # Library settings
 PKG_CONFIG_NAME="scip"
 PKG_TEST_HEADER="<scip/scip.h>"
 PKG_CFLAGS=""
-PKG_LIBS=""
+PKG_LIBS="-lscip -lsoplex -lbliss -lclusol"
+
+# Determine installation directory
+R_SCIP_PKG_HOME=`pwd`
+
+# Determine host operating system
+if [ `uname` = "Darwin" ]; then
+  HOST_OS="macOS"
+else
+  HOST_OS="linux"
+fi
 
 # Find R
 : ${R_HOME=`R RHOME`}
@@ -14,40 +27,122 @@ if test -z "${R_HOME}"; then
   exit 1
 fi
 
+# Find dependencies
+## use pkg-config if available
+pkg-config --version >/dev/null 2>&1
+if [ $? -eq 0 ]; then
+  echo "Found pkg-config, using it for dependency CFLAGS and LIBS"
+  PKG_CONFIG="TRUE"
+  if [ $HOST_OS = "linux" ]; then
+    DEP_CFLAGS="`pkg-config --cflags gmp blas gsl zlib`"
+    DEP_LIBS="`pkg-config --libs gmp blas gsl zlib`"
+  else
+    DEP_CFLAGS="`pkg-config --cflags gmp gsl zlib`"
+    DEP_LIBS="`pkg-config --libs gmp gsl zlib`"
+  fi
+else
+  echo "Couldn't find pkg-config, guessing dependency CFLAGS and LIBS"
+  PKG_CONFIG="FALSE"
+  DEP_CFLAGS=""
+  DEP_LIBS="-lpthread -lgsl -lblas -lgslcblas -lm -lz -lgmp"
+fi
+
+# add in platform specific libraries
+if [ $HOST_OS = "linux" ]; then
+  DEP_LIBS="${DEP_LIBS} -lgfortran -lquadmath -fPIC"
+else
+  DEP_LIBS="${DEP_LIBS} -fPIC"
+fi
+
+## add TBB dependency
+if [ $HOST_OS = "linux" ]; then
+  echo "On Linux, using system version of TBB library"
+  pkg-config --version >/dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    echo "  found pkg-config, using it for TBB library CFLAGS and LIBS"
+    TBB_CFLAGS="`pkg-config --cflags tbb`"
+    TBB_LIBS="`pkg-config --libs tbb`"
+  else
+    echo "  couldn't find pkg-config, guessing TBB library CFLAGS and LIBS"
+    TBB_CFLAGS=""
+    TBB_LIBS="-ltbb -ltbbmalloc"
+  fi
+else
+  ## display message
+  echo "On macOS, using homebrew for TBB library"
+  ## find TBB paths
+  # TBB_INCLUDE_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file('include', package = 'RcppParallel'))"`
+  # TBB_LIB_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file('lib', package = 'RcppParallel'))"`
+
+  ## find TBB paths
+  brew --prefix >/dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    ## find TBB homebew installation
+    BREW_TBB_LIB_DIR=`brew --prefix tbb`
+    cd ${BREW_TBB_LIB_DIR}
+    tree .
+    ## find directory containing library files
+    TBB_LIB_DIR="${BREW_TBB_LIB_DIR}/lib"
+    TBB_INCLUDE_DIR="${BREW_TBB_LIB_DIR}/include"
+    if [ -d "${TBB_INCLUDE_DIR}/oneapi" ]; then
+      TBB_INCLUDE_DIR="${TBB_INCLUDE_DIR}/oneapi"
+    fi
+    if [ ! -d "${TBB_LIB_DIR}" ]; then
+      echo "  couldn't TBB_LIB_DIR directory"
+      exit 1
+    fi
+    if [ ! -d "${TBB_INCLUDE_DIR}" ]; then
+      echo "  couldn't TBB_INCLUDE_DIR directory"
+      exit 1
+    fi
+    ## escape file paths
+    TBB_INCLUDE_DIR=$( echo "$TBB_INCLUDE_DIR" | sed 's/ /\\ /g' )
+    TBB_LIB_DIR=$( echo "$TBB_LIB_DIR" | sed 's/ /\\ /g' )
+    ## set TBB compiler variables
+    TBB_CFLAGS="-I\"${TBB_INCLUDE_DIR}\""
+    TBB_LIBS="-L\"${TBB_LIB_DIR}\" -ltbb -ltbbmalloc"
+    ## reset directory
+    cd ${R_SCIP_PKG_HOME}
+  else
+    echo "  couldn't find Homebrew"
+    exit 1
+  fi
+fi
+
 # Check if variables are found
 if [ "$SCIP_INCLUDE_DIR" ] || [ "$SCIP_CONFIG_DIR" ] || [ "$SCIP_LIB_DIR" ] ; then
   ## if found, then use these variables
   echo "Found SCIP_INCLUDE_DIR, SCIP_CONFIG_DIR, and/or SCIP_LIB_DIR!"
-elif [ "$SCIP_HOME" ] ; then
-  ## if found, then use these variables
-  echo "Found SCIP_HOME!"
-  ## set SCIP variables
-  SCIP_INCLUDE_DIR=${SCIP_HOME}/scip/src
-  SCIP_CONFIG_DIR=${SCIP_HOME}/build/scip
-  SCIP_LIB_DIR=${SCIP_HOME}/build/lib
+# elif [ "$SCIP_HOME" ] ; then
+#   ## if found, then use these variables
+#   echo "Found SCIP_HOME!"
+#   ## set SCIP variables
+#   SCIP_INCLUDE_DIR="${SCIP_HOME}/scip/src"
+#   SCIP_CONFIG_DIR="${SCIP_HOME}/build/scip"
+#   SCIP_LIB_DIR="${SCIP_HOME}/build/lib"
+#   SCIP_LIB_DIR2="${SCIP_HOME}/build/papilo"
 else
   ## otherwise, compile SCIP from source and set variables
-  echo "Compiling SCIP from source"
-  ## determine installation directory
-  R_SCIP_PKG_HOME=`pwd`
-  ###determine and create directory to install SCIP
-  R_SCIP_SRC_DIR=`${RSCRIPT_BIN} -e "cat(tools::R_user_dir('rscip'))"`
-  mkdir -p ${R_SCIP_SRC_DIR}
-  ## remove any previous installation of SCIP
-  cd ${R_SCIP_SRC_DIR}
-  rm -rf sciplib
+  echo "Compiling SCIP from source!"
   ## install SCIP to user data directory
   cd ${R_SCIP_PKG_HOME}
   bash inst/build_scip.sh
   ## set SCIP variables
-  SCIP_INCLUDE_DIR=${R_SCIP_SRC_DIR}/sciplib/scip/src
-  SCIP_CONFIG_DIR=${R_SCIP_SRC_DIR}/sciplib/build/scip
-  SCIP_LIB_DIR=${R_SCIP_SRC_DIR}/sciplib/build/lib
+  SCIP_INCLUDE_DIR="${R_SCIP_PKG_HOME}/sciplib/scip/src"
+  SCIP_CONFIG_DIR="${R_SCIP_PKG_HOME}/sciplib/build/scip"
+  SCIP_LIB_DIR="${R_SCIP_PKG_HOME}/sciplib/build/lib"
+  SCIP_LIB_DIR2="${R_SCIP_PKG_HOME}/sciplib/build/papilo"
 fi
 
+# Escape spaces in file paths
+SCIP_INCLUDE_DIR=$( echo "$SCIP_INCLUDE_DIR" | sed 's/ /\\ /g' )
+SCIP_CONFIG_DIR=$( echo "$SCIP_CONFIG_DIR" | sed 's/ /\\ /g' )
+SCIP_LIB_DIR=$( echo "$SCIP_LIB_DIR" | sed 's/ /\\ /g' )
+SCIP_LIB_DIR2=$( echo "$SCIP_LIB_DIR2" | sed 's/ /\\ /g' )
+
 # Set package compilation variables
-PKG_CFLAGS="-I$SCIP_INCLUDE_DIR -I$SCIP_CONFIG_DIR $PKG_CFLAGS"
-PKG_LIBS="-L$SCIP_LIB_DIR -Wl,-rpath=$SCIP_LIB_DIR -lscip $PKG_LIBS"
+PKG_CFLAGS="-I\"$SCIP_INCLUDE_DIR\" -I\"${SCIP_CONFIG_DIR}\" ${PKG_CFLAGS} ${TBB_CFLAGS} ${DEP_CFLAGS}"
+PKG_LIBS="-L\"${SCIP_LIB_DIR}\" -L\"${SCIP_LIB_DIR2}\" ${PKG_LIBS} ${TBB_LIBS} ${DEP_LIBS}"
 
 # For debugging
 echo "Using PKG_CFLAGS=$PKG_CFLAGS"
@@ -57,19 +152,6 @@ echo "Using PKG_LIBS=$PKG_LIBS"
 CXX=$(${R_HOME}/bin/R CMD config CXX)
 CXXFLAGS=$(${R_HOME}/bin/R CMD config CXXFLAGS)
 CPPFLAGS=$(${R_HOME}/bin/R CMD config CPPFLAGS)
-
-# Test configuration
-echo "#include $PKG_TEST_HEADER" | ${CXX} -E ${CPPFLAGS} ${PKG_CFLAGS} ${CXXFLAGS} -xc++ - >/dev/null 2>&1
-
-# Customize the error
-if [ $? -ne 0 ]; then
-  echo "------------------------- [ANTICONF ERROR] ----------------------------------"
-  echo "Configuration failed because $PKG_CONFIG_NAME could not be installed."
-  echo "------------------------- [BEGIN ERROR MESSAGE] -----------------------------"
-  cat configure.log
-  echo "------------------------- [END ERROR MESSAGE] -------------------------------"
-  exit 1
-fi
 
 # Write to Makevars
 sed -e "s|@cflags@|$PKG_CFLAGS|" -e "s|@libs@|$PKG_LIBS|" src/Makevars.in > src/Makevars

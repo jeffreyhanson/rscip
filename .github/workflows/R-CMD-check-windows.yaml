@@ -53,7 +53,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          cache-version: 4
+          cache-version: 1
           extra-packages: |
             any::rcmdcheck
           needs: |
@@ -68,7 +68,15 @@ jobs:
 
       - uses: r-lib/actions/check-r-package@v2
         with:
-          upload-snapshots: true
+          upload-snapshots: false
+
+      - name: Show log files
+        if: always()
+        run: |
+          echo "INSTALL FILE"
+          cat "D:/a/rscip/rscip/check/rscip.Rcheck/00install.out"
+
+        shell: bash
 
       - name: Show testthat output
         if: always()

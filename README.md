@@ -100,7 +100,7 @@ this *R* package in publications.
       Rehfeldt D, Schlein S, Schl"osser F, Serrano F, Shinano Y, Sofranac
       B, Turner M, Vigerske S, Wegscheider F, Wellner P, Weninger D, Witzig
       J (2021). "The SCIP Optimization Suite 8.0." Optimization Online.
-      <http://www.optimization-online.org/DB_HTML/2021/12/8728.html>.
+      <https://optimization-online.org/DB_HTML/2021/12/8728.html>.
 
     A BibTeX entry for LaTeX users is
 
@@ -109,7 +109,7 @@ this *R* package in publications.
         author = {Ksenia Bestuzheva and Mathieu Besan{\c{c}}on and Wei-Kun Chen and Antonia Chmiela and Tim Donkiewicz and Jasper {van Doornmalen} and Leon Eifler and Oliver Gaul and Gerald Gamrath and Ambros Gleixner and Leona Gottwald and Christoph Graczyk and Katrin Halbig and Alexander Hoen and Christopher Hojny and Rolf {van der Hulst} and Thorsten Koch and Marco L{"u}bbecke and Stephen J Maher and Frederic Matter and Erik M{"u}hmer and Benjamin M{"u}ller and Marc E Pfetsch and Daniel Rehfeldt and Steffan Schlein and Franziska Schl{"o}sser and Felipe Serrano and Yuji Shinano and Boro Sofranac and Mark Turner and Stefan Vigerske and Fabian Wegscheider and Philipp Wellner and Dieter Weninger and Jakob Witzig},
         institution = {Optimization Online},
         year = {2021},
-        url = {http://www.optimization-online.org/DB_HTML/2021/12/8728.html},
+        url = {https://optimization-online.org/DB_HTML/2021/12/8728.html},
       }
 
     For package version, use "packageVersion('rscip')"

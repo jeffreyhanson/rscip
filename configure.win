@@ -1,38 +1,103 @@
 #!/bin/sh
 
+# Display information
+echo "Use 'configure.win'"
+
 # Library settings
 PKG_CONFIG_NAME="scip"
 PKG_TEST_HEADER="<scip/scip.h>"
 PKG_CFLAGS=""
-PKG_LIBS=""
+PKG_LIBS="-lscip -lsoplex -lbliss"
+# PKG_LIBS="-lscip -lsoplex -lbliss -lclusol"
+DEP_CFLAGS=""
+DEP_LIBS="-lgmp -lblas -lpthread -lgfortran -lgsl -lquadmath -lm -lz"
 
-# Check if variables are found
-if [ "$SCIP_INCLUDE_DIR" ] || [ "$SCIP_CONFIG_DIR" ] || ["$SCIP_LIB_DIR"] ; then
-  ## if found, then use these variables
-  echo "Found SCIP_INCLUDE_DIR, SCIP_CONFIG_DIR, and/or SCIP_LIB_DIR!"
-elif [ "$SCIP_HOME" ] ; then
-  ## if found, then use these variables
-  echo "Found SCIP_HOME!"
-  SCIP_INCLUDE_DIR=${SCIP_HOME}/scip/src
-  SCIP_CONFIG_DIR=${SCIP_HOME}/build/scip
-  SCIP_LIB_DIR=${SCIP_HOME}/build/lib
-else
-  ## otherwise, compile SCIP from source and set variables
-  echo "Compiling SCIP from source"
-  if test -z "${R_SCIP_LIB_DIR}"; then
-      R_SCIP_PKG_HOME=`pwd`
-      bash inst/build_scip.sh
-      cd ${R_SCIP_PKG_HOME}
-      rm -rf inst/SCIP
-      SCIP_LIB_DIR=${R_SCIP_PKG_HOME}/src/SCIPlib/lib
-      SCIP_INCLUDE_DIR=${R_SCIP_PKG_HOME}/src/SCIPlib/include
-      SCIP_CONFIG_DIR=${R_SCIP_PKG_HOME}/src/SCIPlib/config
-  fi
+# Find R
+: ${R_HOME=`R RHOME`}
+RSCRIPT_BIN=${R_HOME}/bin/Rscript
+if test -z "${R_HOME}"; then
+  echo "'R_HOME' could not be found!"
+  exit 1
 fi
 
+# Unpack BLAS files
+# R_SCIP_PKG_HOME=`pwd`
+# BLAS_SRC_FILE=`find "$(pwd -P)" -name "OpenBLAS*zip"`
+# BLAS_DIR="${R_SCIP_PKG_HOME}/openblas"
+# mkdir -p ${BLAS_SRC_DIR}
+# unzip "${BLAS_SRC_FILE}" -d "${BLAS_DIR}"
+# BLAS_INCLUDE_DIR="${BLAS_DIR}/include"
+# BLAS_LIB_DIR="${BLAS_DIR}/lib"
+
+# Unpack TBB files
+R_SCIP_PKG_HOME=`pwd`
+TBB_SRC_FILE=`find "$(pwd -P)" -name "oneapi*zip"`
+unzip "${TBB_SRC_FILE}" -d "${R_SCIP_PKG_HOME}"
+TBB_SRC_DIR=`find "$(pwd -P)" -maxdepth 1  -type d -name "*oneapi*"`
+TBB_DIR="${R_SCIP_PKG_HOME}/tbb"
+TBB_INCLUDE_DIR="${TBB_DIR}/include"
+TBB_LIB_DIR="${TBB_DIR}/lib"
+mkdir -p ${TBB_INCLUDE_DIR}
+cp -R ${TBB_SRC_DIR}/include/oneapi/* ${TBB_INCLUDE_DIR}
+mkdir -p ${TBB_LIB_DIR}
+cp -R ${TBB_SRC_DIR}/lib/intel64/vc14_uwp/* ${TBB_LIB_DIR}
+cp -R ${TBB_SRC_DIR}/redist/intel64/vc14_uwp/* ${TBB_LIB_DIR}
+
+
+echo "TBB_LIB_DIR=${TBB_LIB_DIR}"
+ls -la ${TBB_LIB_DIR}
+
+# compile SCIP from source and set variables
+echo "Compiling SCIP from source!"
+## determine installation directory
+R_SCIP_PKG_HOME=`pwd`
+## install SCIP to user data directory
+cd ${R_SCIP_PKG_HOME}
+bash inst/build_scip.sh
+
+## set SCIP variables
+SCIP_INCLUDE_DIR="${R_SCIP_PKG_HOME}/sciplib/scip/src"
+SCIP_CONFIG_DIR="${R_SCIP_PKG_HOME}/sciplib/build/scip"
+SCIP_LIB_DIR="${R_SCIP_PKG_HOME}/sciplib/build/lib"
+SCIP_LIB_DIR2="${R_SCIP_PKG_HOME}/sciplib/build/papilo"
+
+# Find TBB paths
+# TBB_INCLUDE_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file('include', package = 'RcppParallel'))"`
+# TBB_LIB_DIR=`"${R_HOME}/bin/Rscript" -e "cat(system.file('lib', package = 'RcppParallel'))"`
+# if [ -d "${TBB_LIB_DIR}/x64" ]; then
+#   TBB_LIB_DIR="${TBB_LIB_DIR}/x64"
+# fi
+
+# Escape spaces in file paths
+SCIP_INCLUDE_DIR=$( echo "$SCIP_INCLUDE_DIR" | sed 's/ /\\ /g' )
+SCIP_CONFIG_DIR=$( echo "$SCIP_CONFIG_DIR" | sed 's/ /\\ /g' )
+SCIP_LIB_DIR=$( echo "$SCIP_LIB_DIR" | sed 's/ /\\ /g' )
+SCIP_LIB_DIR2=$( echo "$SCIP_LIB_DIR2" | sed 's/ /\\ /g' )
+TBB_INCLUDE_DIR=$( echo "$TBB_INCLUDE_DIR" | sed 's/ /\\ /g' )
+TBB_LIB_DIR=$( echo "$TBB_LIB_DIR" | sed 's/ /\\ /g' )
+BLAS_INCLUDE_DIR=$( echo "$BLAS_INCLUDE_DIR" | sed 's/ /\\ /g' )
+BLAS_LIB_DIR=$( echo "$BLAS_LIB_DIR" | sed 's/ /\\ /g' )
+
+# Normalize slashes in file paths
+SCIP_INCLUDE_DIR=$( echo "$SCIP_INCLUDE_DIR" | sed 's/\\/\//g' )
+SCIP_CONFIG_DIR=$( echo "$SCIP_CONFIG_DIR" | sed 's/\\/\//g' )
+SCIP_LIB_DIR=$( echo "$SCIP_LIB_DIR" | sed 's/\\/\//g' )
+SCIP_LIB_DIR2=$( echo "$SCIP_LIB_DIR2" | sed 's/\\/\//g' )
+TBB_INCLUDE_DIR=$( echo "$TBB_INCLUDE_DIR" | sed 's/\\/\//g' )
+TBB_LIB_DIR=$( echo "$TBB_LIB_DIR" | sed 's/\\/\//g' )
+BLAS_INCLUDE_DIR=$( echo "$BLAS_INCLUDE_DIR" | sed 's/\\/\//g' )
+BLAS_LIB_DIR=$( echo "$BLAS_LIB_DIR" | sed 's/\\/\//g' )
+
+# Set external library compilation variables
+TBB_CFLAGS="-I${TBB_INCLUDE_DIR}"
+TBB_LIBS="${TBB_LIB_DIR}/tbb12.dll ${TBB_LIB_DIR}/tbb12.lib ${TBB_LIB_DIR}/tbbmalloc.dll ${TBB_LIB_DIR}/tbbmalloc.lib"
+# TBB_LIBS="${TBB_LIB_DIR}/tbb.lib ${TBB_LIB_DIR}/tbbmalloc.lib"
+# BLAS_CFLAGS="-I\"${BLAS_INCLUDE_DIR}\""
+# BLAS_LIBS="-L\"${BLAS_LIB_DIR}\" -lopenblas"
+
 # Set package compilation variables
-PKG_CFLAGS="-isystem $SCIP_INCLUDE_DIR -isystem $SCIP_CONFIG_DIR $PKG_CFLAGS"
-PKG_LIBS="-Wl,-rpath,$SCIP_LIB_DIR $SCIP_LIB_DIR/libscip.so $PKG_LIBS"
+PKG_CFLAGS="-I\"$SCIP_INCLUDE_DIR\" -I\"${SCIP_CONFIG_DIR}\" ${PKG_CFLAGS} ${DEP_CFLAGS} ${TBB_CFLAGS}"
+PKG_LIBS="-L\"${SCIP_LIB_DIR}\" -L\"${SCIP_LIB_DIR2}\" ${PKG_LIBS} ${DEP_LIBS} ${TBB_LIBS}"
 
 # For debugging
 echo "Using PKG_CFLAGS=$PKG_CFLAGS"
@@ -43,21 +108,8 @@ CXX=$(${R_HOME}/bin/R CMD config CXX)
 CXXFLAGS=$(${R_HOME}/bin/R CMD config CXXFLAGS)
 CPPFLAGS=$(${R_HOME}/bin/R CMD config CPPFLAGS)
 
-# Test configuration
-echo "#include $PKG_TEST_HEADER" | ${CXX} -E ${CPPFLAGS} ${PKG_CFLAGS} ${CXXFLAGS} -xc++ - >/dev/null 2>&1
-
-# Customize the error
-if [ $? -ne 0 ]; then
-  echo "------------------------- [ANTICONF ERROR] ----------------------------------"
-  echo "Configuration failed because $PKG_CONFIG_NAME could not be installed."
-  echo "------------------------- [BEGIN ERROR MESSAGE] -----------------------------"
-  cat configure.log
-  echo "------------------------- [END ERROR MESSAGE] -------------------------------"
-  exit 1
-fi
-
 # Write to Makevars
-sed -e "s|@cflags@|$PKG_CFLAGS|" -e "s|@libs@|$PKG_LIBS|" src/Makevars.in > src/Makevars
+sed -e "s|@cflags@|$PKG_CFLAGS|" -e "s|@libs@|$PKG_LIBS|" src/Makevars.in > src/Makevars.win
 
 # success
 exit 0

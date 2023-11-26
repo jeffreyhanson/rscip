@@ -48,13 +48,22 @@ jobs:
         run: |
           brew install \
             gmp \
-            brew \
             boost \
-            cmake
+            scip \
+            ampl-mp \
+            openjdk \
+            pkg-config \
+            readline \
+            openblas \
+            gsl \
+            git \
+            cmake \
+            tbb \
+            tree
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          cache-version: 4
+          cache-version: 1
           extra-packages: |
             any::rcmdcheck
             cran/XML
@@ -70,7 +79,15 @@ jobs:
 
       - uses: r-lib/actions/check-r-package@v2
         with:
-          upload-snapshots: true
+          upload-snapshots: false
+
+      - name: Show log files
+        if: always()
+        run: |
+          echo "INSTALL LOG"
+          cat "/Users/runner/work/rscip/rscip/check/rscip.Rcheck/00install.out"
+          echo "CHECK LOG"
+          cat "/Users/runner/work/rscip/rscip/check/rscip.Rcheck/00check.log"
 
       - name: Show testthat output
         if: always()
