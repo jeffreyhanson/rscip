@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#
+# Set variables
+#
 if test -z "${MAKE}"; then MAKE=`which make` 2> /dev/null; fi
 if test -z "${MAKE}"; then MAKE=`which /Applications/Xcode.app/Contents/Developer/usr/bin/make` 2> /dev/null; fi
 
@@ -15,62 +18,112 @@ if test -z "${CMAKE_EXE}"; then
 fi
 
 : ${R_HOME=`R RHOME`}
-RSCRIPT_BIN=${R_HOME}/bin/Rscript
 if test -z "${R_HOME}"; then
     echo "'R_HOME' could not be found!"
     exit 1
 fi
 
-R_SCIP_PKG_HOME=`pwd`
-SCIP_SRC_FILE=`find "$(pwd -P)" -name "scipopt*"`
-SCIP_SRC_DIR=`basename ${SCIP_SRC_FILE} .tgz`
-R_SCIP_SRC_DIR=`${RSCRIPT_BIN} -e "cat(tools::R_user_dir('rscip'))"`
-R_SCIP_LIB_DIR=${R_SCIP_SRC_DIR}/sciplib
-R_SCIP_BUILD_DIR=${R_SCIP_SRC_DIR}/sciplib/build
-
-echo ""
-echo "[FILES AND FOLDERS]"
-echo "R_SCIP_PKG_HOME = '${R_SCIP_PKG_HOME}'"
-echo "SCIP_SRC_FILE = '${SCIP_SRC_FILE}'"
-echo "SCIP_SRC_DIR = '${SCIP_SRC_DIR}'"
-echo "R_SCIP_SRC_DIR = '${R_SCIP_SRC_DIR}'"
-echo "R_SCIP_LIB_DIR = '${R_SCIP_LIB_DIR}'"
-echo "R_SCIP_BUILD_DIR = '${R_SCIP_BUILD_DIR}'"
+CFLAGS=`"${R_HOME}/bin/R" CMD config CFLAGS`
+CPPFLAGS=`"${R_HOME}/bin/R" CMD config --cppflags`
+CXXFLAGS=`"${R_HOME}/bin/R" CMD config CXXFLAGS`
+dedupe_flags() {
+    printf '%s\n' "$1" | awk '{
+        out = "";
+        for (i = 1; i <= NF; i++) {
+            if (!seen[$i]++) {
+                out = out $i " "
+            }
+        }
+        sub(/ $/, "", out);
+        print out;
+    }'
+}
 
 export CC=`"${R_HOME}/bin/R" CMD config CC`
-export CXX=`"${R_HOME}/bin/R" CMD config CXX`
+export CXX=`"${R_HOME}/bin/R" CMD config CXX11`
 export CXX11=`"${R_HOME}/bin/R" CMD config CXX11`
-export CXXFLAGS=`"${R_HOME}/bin/R" CMD config CXXFLAGS`
-export CFLAGS=`"${R_HOME}/bin/R" CMD config CFLAGS`
-export CPPFLAGS=`"${R_HOME}/bin/R" CMD config CPPFLAGS`
-export LDFLAGS=`"${R_HOME}/bin/R" CMD config LDFLAGS`
+export CFLAGS="${CFLAGS}"
+export CPPFLAGS="${CPPFLAGS}"
+export CXXFLAGS="${CXXFLAGS}"
+LDFLAGS=`"${R_HOME}/bin/R" CMD config LDFLAGS`
+LDFLAGS=`dedupe_flags "${LDFLAGS}"`
+export LDFLAGS="${LDFLAGS}"
+
+R_SCIP_PKG_HOME=`pwd`
+SCIP_SRC_FILE=`find "${R_SCIP_PKG_HOME}/inst" -maxdepth 1 -name "scipoptsuite-*.tgz" | head -n 1`
+if test -z "${SCIP_SRC_FILE}"; then
+    echo "Could not find 'scipoptsuite-*.tgz' in inst/"
+    exit 1
+fi
+SCIP_SRC_DIR_NAME=`basename "${SCIP_SRC_FILE}" .tgz`
+SCIP_SRC_DIR="${R_SCIP_PKG_HOME}/inst/${SCIP_SRC_DIR_NAME}"
+R_SCIP_BUILD_DIR="${SCIP_SRC_DIR}/build"
+R_SCIP_LIB_DIR="${R_SCIP_PKG_HOME}/src/sciplib"
+
+# Escape spaces for CMake install prefix
+R_SCIP_LIB_DIR_ESC=$(printf '%s' "${R_SCIP_LIB_DIR}" | sed 's/ /\\ /g')
 
 echo ""
-echo "[SYSTEM]"
 echo "CMAKE VERSION: '`${CMAKE_EXE} --version | head -n 1`'"
 echo "arch: '$(arch)'"
-echo "R_ARCH: '$R_ARCH'"
 echo "CC: '${CC}'"
 echo "CXX: '${CXX}'"
 echo "CXX11: '${CXX11}'"
-
-# extract scipoptsuite
+echo "CXXFLAGS: '${CXXFLAGS}'"
+echo "CFLAGS: '${CFLAGS}'"
+echo "CPPFLAGS: '${CPPFLAGS}'"
+echo "LDFLAGS: '${LDFLAGS}'"
+echo "SCIP_SRC_FILE: '${SCIP_SRC_FILE}'"
+echo "SCIP_SRC_DIR: '${SCIP_SRC_DIR}'"
+echo "R_SCIP_BUILD_DIR: '${R_SCIP_BUILD_DIR}'"
+echo "R_SCIP_LIB_DIR: '${R_SCIP_LIB_DIR}'"
 echo ""
-echo "[EXTRACTION]"
-tar -xzf ${SCIP_SRC_FILE} -C ${R_SCIP_SRC_DIR}
-rm -f ${SCIP_SRC_FILE}
-mv ${R_SCIP_SRC_DIR}/${SCIP_SRC_DIR} ${R_SCIP_LIB_DIR}
 
-# config makefile
+# Extract SCIPOptSuite
+rm -rf "${SCIP_SRC_DIR}"
+tar -xzf "${SCIP_SRC_FILE}" -C "${R_SCIP_PKG_HOME}/inst"
+
+# Patch CMake files to tolerate spaces in paths and silence unused test dependencies
+if command -v perl >/dev/null 2>&1; then
+    if [ -f "${SCIP_SRC_DIR}/scip/CMakeLists.txt" ]; then
+        perl -0pi -e 's|if\(\(GIT\) AND \(EXISTS \${CMAKE_CURRENT_SOURCE_DIR}/\.git\)\)|if((GIT) AND (EXISTS \\\"\${CMAKE_CURRENT_SOURCE_DIR}/.git\\\"))|g' "${SCIP_SRC_DIR}/scip/CMakeLists.txt"
+        perl -0pi -e 's|WORKING_DIRECTORY \${CMAKE_CURRENT_SOURCE_DIR}|WORKING_DIRECTORY \\\"\${CMAKE_CURRENT_SOURCE_DIR}\\\"|g' "${SCIP_SRC_DIR}/scip/CMakeLists.txt"
+        perl -0pi -e 's|message\(STATUS "Finding CRITERION"\).*?endif\(\)|if(BUILD_TESTING)\nmessage(STATUS "Finding CRITERION")\nfind_package(CRITERION)\nif(CRITERION_FOUND)\n    message(STATUS "Finding CRITERION - found")\nelse()\n    message(STATUS "Finding CRITERION - not found")\nendif()\nendif()|s' "${SCIP_SRC_DIR}/scip/CMakeLists.txt"
+    fi
+    if [ -f "${SCIP_SRC_DIR}/soplex/CMakeLists.txt" ]; then
+        perl -0pi -e 's|if\(\(GIT\) AND \(EXISTS \${CMAKE_CURRENT_SOURCE_DIR}/\.git\)\)|if((GIT) AND (EXISTS \\\"\${CMAKE_CURRENT_SOURCE_DIR}/.git\\\"))|g' "${SCIP_SRC_DIR}/soplex/CMakeLists.txt"
+        perl -0pi -e 's|WORKING_DIRECTORY \${CMAKE_CURRENT_SOURCE_DIR}|WORKING_DIRECTORY \\\"\${CMAKE_CURRENT_SOURCE_DIR}\\\"|g' "${SCIP_SRC_DIR}/soplex/CMakeLists.txt"
+    fi
+fi
+
+# Setup build directory
+mkdir -p "${R_SCIP_BUILD_DIR}"
+mkdir -p "${R_SCIP_LIB_DIR}"
+cd "${R_SCIP_BUILD_DIR}"
+
+# Derive build options
+DEFAULT_CMAKE_OPTS="\
+    -DCMAKE_INSTALL_PREFIX=${R_SCIP_LIB_DIR_ESC} \
+    -DCMAKE_POSITION_INDEPENDENT_CODE:bool=ON \
+    -DBUILD_SHARED_LIBS:bool=OFF \
+    -DSHARED:bool=OFF \
+    -DBUILD_TESTING:bool=OFF \
+    -DQUADMATH:bool=OFF \
+    -DPAPILO:bool=OFF \
+    -DZIMPL:bool=OFF \
+    -DREADLINE:bool=OFF \
+    -DIPOPT:bool=OFF \
+    -DAMPL:bool=OFF \
+    -DGCG:bool=OFF \
+    -DUG:bool=OFF \
+    -DTPI=tny \
+"
+CMAKE_OPTS=${DEFAULT_CMAKE_OPTS}
+
 echo ""
-echo "[CONFIGURATION]"
-mkdir -p ${R_SCIP_BUILD_DIR}
-cd ${R_SCIP_BUILD_DIR}
-CMAKE_OPTS="-DIPOPT=off -DGMP=on -DZIMPL=off -DREADLINE=off -DTPI=tny -DCMAKE_POSITION_INDEPENDENT_CODE:bool=ON -DSHARED:bool=on"
+echo "Cmake Options"
+echo ${CMAKE_OPTS}
+echo ""
+
 ${CMAKE_EXE} .. ${CMAKE_OPTS} -G "Unix Makefiles"
-
-# build scip
-echo ""
-echo "[BUILDING]"
-MAKE_OPTS="ZLIB=false READLINE=false TPI=tny SHARED=true"
-${MAKE} libscip ${MAKE_OPTS}
+${MAKE} install

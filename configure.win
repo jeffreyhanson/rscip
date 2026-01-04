@@ -1,63 +1,19 @@
 #!/bin/sh
 
-# Library settings
-PKG_CONFIG_NAME="scip"
-PKG_TEST_HEADER="<scip/scip.h>"
-PKG_CFLAGS=""
-PKG_LIBS=""
+echo "Use 'configure.win'"
 
-# Check if variables are found
-if [ "$SCIP_INCLUDE_DIR" ] || [ "$SCIP_CONFIG_DIR" ] || ["$SCIP_LIB_DIR"] ; then
-  ## if found, then use these variables
-  echo "Found SCIP_INCLUDE_DIR, SCIP_CONFIG_DIR, and/or SCIP_LIB_DIR!"
-elif [ "$SCIP_HOME" ] ; then
-  ## if found, then use these variables
-  echo "Found SCIP_HOME!"
-  SCIP_INCLUDE_DIR=${SCIP_HOME}/scip/src
-  SCIP_CONFIG_DIR=${SCIP_HOME}/build/scip
-  SCIP_LIB_DIR=${SCIP_HOME}/build/lib
-else
-  ## otherwise, compile SCIP from source and set variables
-  echo "Compiling SCIP from source"
-  if test -z "${R_SCIP_LIB_DIR}"; then
-      R_SCIP_PKG_HOME=`pwd`
-      bash inst/build_scip.sh
-      cd ${R_SCIP_PKG_HOME}
-      rm -rf inst/SCIP
-      SCIP_LIB_DIR=${R_SCIP_PKG_HOME}/src/SCIPlib/lib
-      SCIP_INCLUDE_DIR=${R_SCIP_PKG_HOME}/src/SCIPlib/include
-      SCIP_CONFIG_DIR=${R_SCIP_PKG_HOME}/src/SCIPlib/config
-  fi
+if test -z "${R_SCIP_LIB_DIR}"; then
+    R_SCIP_PKG_HOME=`pwd`
+    bash inst/build_scip.sh
+    cd "${R_SCIP_PKG_HOME}"
+    # remove extracted sources to keep the package tree small
+    find inst -maxdepth 1 -type d -name 'scipoptsuite-*' -exec rm -rf {} +
+    R_SCIP_LIB_DIR=${R_SCIP_PKG_HOME}/src/sciplib
 fi
 
-# Set package compilation variables
-PKG_CFLAGS="-isystem $SCIP_INCLUDE_DIR -isystem $SCIP_CONFIG_DIR $PKG_CFLAGS"
-PKG_LIBS="-Wl,-rpath,$SCIP_LIB_DIR $SCIP_LIB_DIR/libscip.so $PKG_LIBS"
+sed -e "s|@RSCIP_LIB_DIR@|${R_SCIP_LIB_DIR}|g" src/Makevars.in > src/Makevars.win
 
-# For debugging
-echo "Using PKG_CFLAGS=$PKG_CFLAGS"
-echo "Using PKG_LIBS=$PKG_LIBS"
-
-# Find compiler
-CXX=$(${R_HOME}/bin/R CMD config CXX)
-CXXFLAGS=$(${R_HOME}/bin/R CMD config CXXFLAGS)
-CPPFLAGS=$(${R_HOME}/bin/R CMD config CPPFLAGS)
-
-# Test configuration
-echo "#include $PKG_TEST_HEADER" | ${CXX} -E ${CPPFLAGS} ${PKG_CFLAGS} ${CXXFLAGS} -xc++ - >/dev/null 2>&1
-
-# Customize the error
-if [ $? -ne 0 ]; then
-  echo "------------------------- [ANTICONF ERROR] ----------------------------------"
-  echo "Configuration failed because $PKG_CONFIG_NAME could not be installed."
-  echo "------------------------- [BEGIN ERROR MESSAGE] -----------------------------"
-  cat configure.log
-  echo "------------------------- [END ERROR MESSAGE] -------------------------------"
-  exit 1
+if [ ! -d "${R_SCIP_LIB_DIR}/include" ] || [ ! -d "${R_SCIP_LIB_DIR}/lib" ]; then
+    echo "'SCIP' libraries could not be found!"
+    exit 1
 fi
-
-# Write to Makevars
-sed -e "s|@cflags@|$PKG_CFLAGS|" -e "s|@libs@|$PKG_LIBS|" src/Makevars.in > src/Makevars
-
-# success
-exit 0

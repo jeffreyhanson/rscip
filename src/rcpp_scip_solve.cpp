@@ -222,7 +222,11 @@ Rcpp::List rcpp_scip_solve(
 
   // Solve problem
   if (threads > 1) {
+#if SCIP_VERSION >= 1000
+    SCIP_CALL(SCIPsolveConcurrent(scip));
+#else
     SCIP_CALL(SCIPsolveParallel(scip));
+#endif
   } else {
     SCIP_CALL(SCIPsolve(scip));
   }
