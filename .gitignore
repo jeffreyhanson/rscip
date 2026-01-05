@@ -33,3 +33,4 @@ Meta/*
 
 # temporary installation files
 src/Makevars
+src/sciplib/
