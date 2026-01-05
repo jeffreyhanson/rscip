@@ -8,3 +8,15 @@
 \description{
 TODO.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/jeffreyhanson/rscip}
+  \item Report bugs at \url{https://github.com/jeffreyhanson/rscip/issues}
+}
+
+}
+\author{
+\strong{Maintainer}: Jeffrey O Hanson \email{jeffrey.hanson@uqconnect.edu.au} (\href{https://orcid.org/0000-0002-4716-6134}{ORCID})
+
+}
