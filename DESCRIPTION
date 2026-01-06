@@ -5,10 +5,14 @@ Title: Interface to SCIP
 Description:
   TODO.
 Authors@R:
-    c(person(c('Jeffrey', 'O'), 'Hanson',
-        email='jeffrey.hanson@uqconnect.edu.au', role = c('aut', 'cre'),
-        comment = c(ORCID = '0000-0002-4716-6134'))
+    c(
+        person(c('Jeffrey', 'O'), 'Hanson',
+            email='jeffrey.hanson@uqconnect.edu.au', role = 'aut',
+            comment = c(ORCID = '0000-0002-4716-6134')),
+        person(c('Daniel'), 'Hermosilla',
+            email='daniel.hermosilla.r@ug.uchile.cl', role = 'cre')
     )
+Maintainer: Daniel Hermosilla <daniel.hermosilla.r@ug.uchile.cl>
 Imports:
     assertthat (>= 0.2.0),
     withr (>= 2.3.0),

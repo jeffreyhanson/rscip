@@ -1,0 +1,85 @@
+--- a/soplex/src/CMakeLists.txt
++++ b/soplex/src/CMakeLists.txt
+@@ -10,6 +10,7 @@
+ include(GNUInstallDirs)
+ 
+ option(SOPLEX_BUILD_EXECUTABLE "Build the SoPlex executable" ON)
++option(SOPLEX_BUILD_SHARED "Build the SoPlex shared library" ON)
+ 
+ include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
+ 
+@@ -171,6 +172,7 @@
+     $<INSTALL_INTERFACE:include>)
+ target_link_libraries(libsoplex ${libs})
+ 
++if(SOPLEX_BUILD_SHARED)
+ # create C shared library
+ add_library(libsoplexshared SHARED ${sources})
+ if(MSVC)
+@@ -194,6 +196,8 @@
+ target_link_libraries(libsoplexshared libsoplex ${libs})
+ set_target_properties(libsoplexshared PROPERTIES CXX_VISIBILITY_PRESET default)
+ 
++endif()
++
+ if(SOPLEX_BUILD_EXECUTABLE)
+ # create soplex binary using library without pic
+ add_executable(soplex soplexmain.cpp)
+@@ -209,7 +213,9 @@
+     find_package(Sanitizers)
+     add_sanitizers(libsoplex)
+     add_sanitizers(libsoplex-pic)
+-    add_sanitizers(libsoplexshared)
++    if(SOPLEX_BUILD_SHARED)
++        add_sanitizers(libsoplexshared)
++    endif()
+     if(SOPLEX_BUILD_EXECUTABLE)
+         add_sanitizers(soplex)
+     endif()
+@@ -251,23 +257,23 @@
+ install(FILES ${PROJECT_SOURCE_DIR}/src/soplex/external/zstr/License.txt DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/soplex/zstr)
+ 
+ # install the binary and the library to appropriate lcoations and add them to an export group
++set(SOPLEX_INSTALL_TARGETS libsoplex libsoplex-pic)
++if(SOPLEX_BUILD_SHARED)
++    list(APPEND SOPLEX_INSTALL_TARGETS libsoplexshared)
++endif()
+ if(SOPLEX_BUILD_EXECUTABLE)
+-install(TARGETS soplex libsoplex libsoplex-pic libsoplexshared EXPORT soplex-targets
+-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
++    list(APPEND SOPLEX_INSTALL_TARGETS soplex)
++endif()
+ 
+-else()
+-install(TARGETS libsoplex libsoplex-pic libsoplexshared EXPORT soplex-targets
++install(TARGETS ${SOPLEX_INSTALL_TARGETS} EXPORT soplex-targets
+     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+-
+-endif()
+ if(MSVC)
+-    install(FILES $<TARGET_PDB_FILE:libsoplexshared> DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
++    if(SOPLEX_BUILD_SHARED)
++        install(FILES $<TARGET_PDB_FILE:libsoplexshared> DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
++    endif()
+     if(SOPLEX_BUILD_EXECUTABLE)
+         install(FILES $<TARGET_PDB_FILE:soplex> DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
+     endif()
+@@ -278,7 +284,11 @@
+ install(FILES ${PROJECT_SOURCE_DIR}/src/soplex/external/fmt/LICENSE.rst DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/soplex/fmt)
+ 
+ # Add library targets to the build-tree export set
+-export(TARGETS libsoplex libsoplex-pic libsoplexshared
++set(SOPLEX_EXPORT_TARGETS libsoplex libsoplex-pic)
++if(SOPLEX_BUILD_SHARED)
++    list(APPEND SOPLEX_EXPORT_TARGETS libsoplexshared)
++endif()
++export(TARGETS ${SOPLEX_EXPORT_TARGETS}
+   FILE "${CMAKE_BINARY_DIR}/soplex-targets.cmake")
+ 
+ #configure the config file for the build tree
