@@ -96,6 +96,23 @@ if command -v perl >/dev/null 2>&1; then
     fi
 fi
 
+PATCH_DIR="${R_SCIP_PKG_HOME}/inst/patches"
+if [ -d "${PATCH_DIR}" ]; then
+    if ! command -v patch >/dev/null 2>&1; then
+        echo "Could not find 'patch' to apply local patches!"
+        exit 1
+    fi
+    for patch_file in "${PATCH_DIR}"/*.patch; do
+        if [ -f "${patch_file}" ]; then
+            echo "Applying patch: $(basename "${patch_file}")"
+            if ! patch -p1 -d "${SCIP_SRC_DIR}" < "${patch_file}"; then
+                echo "Failed to apply patch: ${patch_file}"
+                exit 1
+            fi
+        fi
+    done
+fi
+
 # Setup build directory
 mkdir -p "${R_SCIP_BUILD_DIR}"
 mkdir -p "${R_SCIP_LIB_DIR}"
@@ -108,6 +125,8 @@ DEFAULT_CMAKE_OPTS="\
     -DBUILD_SHARED_LIBS:bool=OFF \
     -DSHARED:bool=OFF \
     -DBUILD_TESTING:bool=OFF \
+    -DSCIP_BUILD_EXECUTABLE:bool=OFF \
+    -DSOPLEX_BUILD_EXECUTABLE:bool=OFF \
     -DQUADMATH:bool=OFF \
     -DPAPILO:bool=OFF \
     -DZIMPL:bool=OFF \

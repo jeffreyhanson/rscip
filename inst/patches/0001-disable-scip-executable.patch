@@ -1,0 +1,147 @@
+--- a/scip/src/CMakeLists.txt
++++ b/scip/src/CMakeLists.txt
+@@ -3,6 +3,8 @@
+ #
+ include(GNUInstallDirs)
+ 
++option(SCIP_BUILD_EXECUTABLE "Build the SCIP executable" ON)
++
+ function(setLibProperties targetname outputname)
+     set_target_properties(${targetname} PROPERTIES
+         OUTPUT_NAME ${outputname})
+@@ -1164,7 +1166,9 @@
+ set(ZIMPL_NEEDED 0)
+ if(SHARED)
+     target_link_libraries(libscip PRIVATE ${ZIMPL_PIC_LIBRARIES} ${LPS_PIC_LIBRARIES})
+-    add_executable(scip main.c ${scipsources} ${objscipsources} ${lpisources} ${lpiexactsources} ${rectlusources} ${tpisources} ${symsources})
++    if(SCIP_BUILD_EXECUTABLE)
++        add_executable(scip main.c ${scipsources} ${objscipsources} ${lpisources} ${lpiexactsources} ${rectlusources} ${tpisources} ${symsources})
++    endif()
+ else()
+     if(SOPLEX_FOUND)
+         set(SOPLEX_NEEDED 1)
+@@ -1173,28 +1177,38 @@
+         set(ZIMPL_NEEDED 1)
+     endif()
+     target_link_libraries(libscip PRIVATE ${ZIMPL_LIBRARIES} ${LPS_LIBRARIES})
+-    add_executable(scip main.c)
+-    target_link_libraries(scip PUBLIC libscip)
++    if(SCIP_BUILD_EXECUTABLE)
++        add_executable(scip main.c)
++        target_link_libraries(scip PUBLIC libscip)
++    endif()
+ endif()
+-set_property(TARGET scip PROPERTY INTERPROCEDURAL_OPTIMIZATION ${LTO_AVAILABLE})
+-
+-add_executable(SCIP::SCIP ALIAS scip)
++if(SCIP_BUILD_EXECUTABLE)
++    set_property(TARGET scip PROPERTY INTERPROCEDURAL_OPTIMIZATION ${LTO_AVAILABLE})
++    add_executable(SCIP::SCIP ALIAS scip)
++endif()
+ add_library(SCIP::libscip ALIAS libscip)
+ 
+-target_compile_options(scip PRIVATE ${SCIP_COMP_OPTIONS})
++if(SCIP_BUILD_EXECUTABLE)
++    target_compile_options(scip PRIVATE ${SCIP_COMP_OPTIONS})
++endif()
+ target_compile_options(libscip PRIVATE ${SCIP_COMP_OPTIONS})
+ 
+ include(GenerateExportHeader)
+ generate_export_header(libscip BASE_NAME scip EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/scip/scip_export.h)
+-target_compile_definitions(scip PRIVATE SCIP_STATIC_DEFINE)
++if(SCIP_BUILD_EXECUTABLE)
++    target_compile_definitions(scip PRIVATE SCIP_STATIC_DEFINE)
++endif()
+ 
+ if(SANITIZE)
+     find_package(Sanitizers)
+     add_sanitizers(libscip)
+-    add_sanitizers(scip)
++    if(SCIP_BUILD_EXECUTABLE)
++        add_sanitizers(scip)
++    endif()
+     get_target_property(CONF_SANITIZE_FLAGS libscip SANITIZE_FLAGS)
+ endif(SANITIZE)
+ 
++if(SCIP_BUILD_EXECUTABLE)
+ target_link_libraries(scip
+     PUBLIC
+     ${SYM_LIBRARIES}
+@@ -1210,8 +1224,11 @@
+     ${LPS_LIBRARIES}
+ )
+ 
++endif()
+ add_dependencies(libscip scip_update_githash)
+-add_dependencies(scip scip_update_githash)
++if(SCIP_BUILD_EXECUTABLE)
++    add_dependencies(scip scip_update_githash)
++endif()
+ 
+ set_target_properties(libscip PROPERTIES
+     VERSION ${SCIP_VERSION_MAJOR}.${SCIP_VERSION_MINOR}.${SCIP_VERSION_PATCH}
+@@ -1221,16 +1238,20 @@
+     C_VISIBILITY_PRESET hidden
+     VISIBILITY_INLINES_HIDDEN 1)
+ 
++if(SCIP_BUILD_EXECUTABLE)
+ target_include_directories(scip BEFORE PUBLIC
+     $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+     $<INSTALL_INTERFACE:include>)
+ 
++endif()
+ # set the install rpath to the installed destination
++if(SCIP_BUILD_EXECUTABLE)
+ set_target_properties(scip PROPERTIES
+     INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
+     INSTALL_RPATH_USE_LINK_PATH TRUE)
+ 
++endif()
+ # install the header files of scip
+ install(FILES ${lpiheaders} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lpi)
+ install(FILES ${lpiexactheaders} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lpiexact)
+@@ -1246,15 +1267,26 @@
+ install(FILES ${blockmemshellheader} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/blockmemshell)
+ 
+ # install the binary and the library to appropriate locations and add them to an export group
++if(SCIP_BUILD_EXECUTABLE)
+ install(TARGETS scip libscip EXPORT scip-targets
+         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+         INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+ 
++else()
++install(TARGETS libscip EXPORT scip-targets
++        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
++        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
++
++endif()
+ # install the debug program database files
+ if(MSVC)
+-  install(FILES $<TARGET_PDB_FILE:scip> DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
++  if(SCIP_BUILD_EXECUTABLE)
++    install(FILES $<TARGET_PDB_FILE:scip> DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
++  endif()
+   if(BUILD_SHARED_LIBS)
+     install(FILES $<TARGET_PDB_FILE:libscip> DESTINATION ${CMAKE_INSTALL_BINDIR} OPTIONAL)
+   endif()
+@@ -1265,9 +1297,15 @@
+ install(FILES ${PROJECT_SOURCE_DIR}/src/tclique/LICENSE DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/scip/tclique)
+ 
+ # Add all targets to the build-tree export set
++if(SCIP_BUILD_EXECUTABLE)
+ export(TARGETS scip libscip
+   FILE "${PROJECT_BINARY_DIR}/scip-targets.cmake")
+ 
++else()
++export(TARGETS libscip
++  FILE "${PROJECT_BINARY_DIR}/scip-targets.cmake")
++
++endif()
+ # make soplex and zimpl dir absolute for the config file
+ if(SOPLEX_NEEDED)
+     get_filename_component(CONF_SOPLEX_DIR ${SOPLEX_DIR} REALPATH BASE_DIR ${CMAKE_SOURCE_DIR})
