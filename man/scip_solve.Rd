@@ -45,7 +45,7 @@ Available options include
 Note that arguments should have one value per decision variable
 (i.e., column in \code{A}).}
 
-\item{A}{matrix (i.e. \code{matrix} or \code{\link{Matrix-class}}) of
+\item{A}{matrix (i.e. \code{matrix} or \code{\link[Matrix]{Matrix-class}}) of
 constraint coefficients. Here, each column corresponds to a different
 decision variable, and each row corresponds to a different constraint.
 To improve performance, it is recommended to specify the matrix using
@@ -138,8 +138,28 @@ All the solver statuses are described below.
 The solving status is not yet known.
 }
 
+\item{SCIP_STATUS_OPTIMAL}{
+The problem was solved to optimality, an optimal solution is available.
+}
+
+\item{SCIP_STATUS_INFEASIBLE}{
+The problem was proven to be infeasible.
+}
+
+\item{SCIP_STATUS_UNBOUNDED}{
+The problem was proven to be unbounded.
+}
+
+\item{SCIP_STATUS_INFORUNBD}{
+The problem was proven to be either infeasible or unbounded.
+}
+
 \item{SCIP_STATUS_USERINTERRUPT}{
 The user interrupted the solving process (by pressing CTRL-C).
+}
+
+\item{SCIP_STATUS_TERMINATE}{
+Status if the process received a SIGTERM signal.
 }
 
 \item{SCIP_STATUS_NODELIMIT}{
@@ -168,6 +188,14 @@ The solving process was interrupted because the memory limit was reached.
 The solving process was interrupted because the gap limit was reached.
 }
 
+\item{SCIP_STATUS_PRIMALLIMIT}{
+The solving process was interrupted because the primal limit was reached.
+}
+
+\item{SCIP_STATUS_DUALLIMIT}{
+The solving process was interrupted because the dual limit was reached.
+}
+
 \item{SCIP_STATUS_SOLLIMIT}{
 The solving process was interrupted because the solution limit was reached.
 }
@@ -179,26 +207,6 @@ was reached.
 
 \item{SCIP_STATUS_RESTARTLIMIT}{
 The solving process was interrupted because the restart limit was reached.
-}
-
-\item{SCIP_STATUS_OPTIMAL}{
-The problem was solved to optimality, an optimal solution is available.
-}
-
-\item{SCIP_STATUS_INFEASIBLE}{
-The problem was proven to be infeasible.
-}
-
-\item{SCIP_STATUS_UNBOUNDED}{
-The problem was proven to be unbounded.
-}
-
-\item{SCIP_STATUS_INFORUNBD}{
-The problem was proven to be either infeasible or unbounded.
-}
-
-\item{SCIP_STATUS_TERMINATE}{
-Status if the process received a SIGTERM signal.
 }
 
 }
@@ -292,5 +300,5 @@ Lübbecke M., Maher S.J., Matter F., Mühmer E., Müller B., Pfetsch M.E.,
 Rehfeldt D., Schlein S., Schlösser F., Serrano F., Shinano Y., Sofranac B.,
 Turner M, Vigerske S.,  Wegscheider F., Wellner P., Weninger D., and
 Witzig J. (2021) The SCIP Optimization Suite 8.0. Available at Optimization
-Online and as ZIB-Report 21-41. \url{http://www.optimization-online.org/DB_HTML/2021/12/8728.html}
+Online and as ZIB-Report 21-41. \url{https://optimization-online.org/DB_HTML/2021/12/8728.html}
 }

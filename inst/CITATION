@@ -42,7 +42,7 @@ bibentry(
   ),
   institution = "Optimization Online",
   year = "2021",
-  url = "http://www.optimization-online.org/DB_HTML/2021/12/8728.html"
+  url = "https://optimization-online.org/DB_HTML/2021/12/8728.html"
 )
 
 citFooter("For package version, use \"packageVersion('rscip')\"\n\n")

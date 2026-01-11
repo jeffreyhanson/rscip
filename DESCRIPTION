@@ -15,8 +15,9 @@ Authors@R:
 Maintainer: Daniel Hermosilla <daniel.hermosilla.r@ug.uchile.cl>
 Imports:
     assertthat (>= 0.2.0),
-    withr (>= 2.3.0),
-    Rcpp (>= 1.0.7)
+    methods,
+    Rcpp (>= 1.0.7),
+    withr (>= 2.3.0)
 Suggests:
     testthat (>= 3.1.0),
     knitr (>= 1.36),
@@ -27,7 +28,7 @@ Depends:
 LinkingTo:
     Rcpp (>= 1.0.7)
 SystemRequirements:
-    C++11,
+    C++17,
     cmake,
     boost (>= 1.74.0),
     openblas,
@@ -43,7 +44,6 @@ Language: en-US
 Encoding: UTF-8
 URL: https://github.com/jeffreyhanson/rscip
 BugReports: https://github.com/jeffreyhanson/rscip/issues
-VignetteBuilder: knitr
 RoxygenNote: 7.3.3
 Collate:
     'RcppExports.R'

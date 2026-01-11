@@ -3,14 +3,14 @@
 #
 # Set variables
 #
-if test -z "${MAKE}"; then MAKE=`which make` 2> /dev/null; fi
-if test -z "${MAKE}"; then MAKE=`which /Applications/Xcode.app/Contents/Developer/usr/bin/make` 2> /dev/null; fi
+if test -z "${MAKE}"; then MAKE=$(command -v make 2>/dev/null); fi
+if test -z "${MAKE}" && test -x /Applications/Xcode.app/Contents/Developer/usr/bin/make; then MAKE=/Applications/Xcode.app/Contents/Developer/usr/bin/make; fi
 
-if test -z "${CMAKE_EXE}"; then CMAKE_EXE=`which cmake4` 2> /dev/null; fi
-if test -z "${CMAKE_EXE}"; then CMAKE_EXE=`which cmake3` 2> /dev/null; fi
-if test -z "${CMAKE_EXE}"; then CMAKE_EXE=`which cmake2` 2> /dev/null; fi
-if test -z "${CMAKE_EXE}"; then CMAKE_EXE=`which cmake` 2> /dev/null; fi
-if test -z "${CMAKE_EXE}"; then CMAKE_EXE=`which /Applications/CMake.app/Contents/bin/cmake` 2> /dev/null; fi
+if test -z "${CMAKE_EXE}"; then CMAKE_EXE=$(command -v cmake4 2>/dev/null); fi
+if test -z "${CMAKE_EXE}"; then CMAKE_EXE=$(command -v cmake3 2>/dev/null); fi
+if test -z "${CMAKE_EXE}"; then CMAKE_EXE=$(command -v cmake2 2>/dev/null); fi
+if test -z "${CMAKE_EXE}"; then CMAKE_EXE=$(command -v cmake 2>/dev/null); fi
+if test -z "${CMAKE_EXE}" && test -x /Applications/CMake.app/Contents/bin/cmake; then CMAKE_EXE=/Applications/CMake.app/Contents/bin/cmake; fi
 
 if test -z "${CMAKE_EXE}"; then
     echo "Could not find 'cmake'!"
@@ -23,33 +23,26 @@ if test -z "${R_HOME}"; then
     exit 1
 fi
 
+R_SCIP_PKG_HOME=`pwd`
+
 CFLAGS=`"${R_HOME}/bin/R" CMD config CFLAGS`
 CPPFLAGS=`"${R_HOME}/bin/R" CMD config --cppflags`
 CXXFLAGS=`"${R_HOME}/bin/R" CMD config CXXFLAGS`
-dedupe_flags() {
-    printf '%s\n' "$1" | awk '{
-        out = "";
-        for (i = 1; i <= NF; i++) {
-            if (!seen[$i]++) {
-                out = out $i " "
-            }
-        }
-        sub(/ $/, "", out);
-        print out;
-    }'
-}
+
+case "$(uname -s)" in
+    MINGW*|MSYS*|CYGWIN*) 
+        CFLAGS="${CFLAGS} -Wno-format -Wno-format-extra-args"
+        CXXFLAGS="${CXXFLAGS} -Wno-format -Wno-format-extra-args"
+        ;;
+esac
 
 export CC=`"${R_HOME}/bin/R" CMD config CC`
-export CXX=`"${R_HOME}/bin/R" CMD config CXX11`
-export CXX11=`"${R_HOME}/bin/R" CMD config CXX11`
-export CFLAGS="${CFLAGS}"
+export CXX=`"${R_HOME}/bin/R" CMD config CXX`
+export CFLAGS="${CFLAGS} ${CPPFLAGS} -DNDEBUG -DSCIP_R_PACKAGE -Dexit=SCIP_exit_replacement -Dabort=SCIP_abort_replacement"
 export CPPFLAGS="${CPPFLAGS}"
-export CXXFLAGS="${CXXFLAGS}"
+export CXXFLAGS="${CXXFLAGS} ${CPPFLAGS} -DNDEBUG -DSCIP_R_PACKAGE -DSOPLEX_DISABLE_STDIO -Dabort=SCIP_abort_replacement"
 LDFLAGS=`"${R_HOME}/bin/R" CMD config LDFLAGS`
-LDFLAGS=`dedupe_flags "${LDFLAGS}"`
 export LDFLAGS="${LDFLAGS}"
-
-R_SCIP_PKG_HOME=`pwd`
 SCIP_SRC_FILE=`find "${R_SCIP_PKG_HOME}/inst" -maxdepth 1 -name "scipoptsuite-*.tgz" | head -n 1`
 if test -z "${SCIP_SRC_FILE}"; then
     echo "Could not find 'scipoptsuite-*.tgz' in inst/"
@@ -68,7 +61,6 @@ echo "CMAKE VERSION: '`${CMAKE_EXE} --version | head -n 1`'"
 echo "arch: '$(arch)'"
 echo "CC: '${CC}'"
 echo "CXX: '${CXX}'"
-echo "CXX11: '${CXX11}'"
 echo "CXXFLAGS: '${CXXFLAGS}'"
 echo "CFLAGS: '${CFLAGS}'"
 echo "CPPFLAGS: '${CPPFLAGS}'"
@@ -83,17 +75,87 @@ echo ""
 rm -rf "${SCIP_SRC_DIR}"
 tar -xzf "${SCIP_SRC_FILE}" -C "${R_SCIP_PKG_HOME}/inst"
 
-# Patch CMake files to tolerate spaces in paths and silence unused test dependencies
+# Patch CMake files to silence unused test dependencies
 if command -v perl >/dev/null 2>&1; then
     if [ -f "${SCIP_SRC_DIR}/scip/CMakeLists.txt" ]; then
-        perl -0pi -e 's|if\(\(GIT\) AND \(EXISTS \${CMAKE_CURRENT_SOURCE_DIR}/\.git\)\)|if((GIT) AND (EXISTS \\\"\${CMAKE_CURRENT_SOURCE_DIR}/.git\\\"))|g' "${SCIP_SRC_DIR}/scip/CMakeLists.txt"
-        perl -0pi -e 's|WORKING_DIRECTORY \${CMAKE_CURRENT_SOURCE_DIR}|WORKING_DIRECTORY \\\"\${CMAKE_CURRENT_SOURCE_DIR}\\\"|g' "${SCIP_SRC_DIR}/scip/CMakeLists.txt"
-        perl -0pi -e 's|message\(STATUS "Finding CRITERION"\).*?endif\(\)|if(BUILD_TESTING)\nmessage(STATUS "Finding CRITERION")\nfind_package(CRITERION)\nif(CRITERION_FOUND)\n    message(STATUS "Finding CRITERION - found")\nelse()\n    message(STATUS "Finding CRITERION - not found")\nendif()\nendif()|s' "${SCIP_SRC_DIR}/scip/CMakeLists.txt"
+        perl -0pi -e 's|message\(STATUS \"Finding CRITERION\"[^\n]*\n.*?endif\(\)|if(BUILD_TESTING)\nmessage(STATUS \"Finding CRITERION\")\nfind_package(CRITERION)\nif(CRITERION_FOUND)\n    message(STATUS \"Finding CRITERION - found\")\nelse()\n    message(STATUS \"Finding CRITERION - not found\")\nendif()\nendif()|s' "${SCIP_SRC_DIR}/scip/CMakeLists.txt"
     fi
-    if [ -f "${SCIP_SRC_DIR}/soplex/CMakeLists.txt" ]; then
-        perl -0pi -e 's|if\(\(GIT\) AND \(EXISTS \${CMAKE_CURRENT_SOURCE_DIR}/\.git\)\)|if((GIT) AND (EXISTS \\\"\${CMAKE_CURRENT_SOURCE_DIR}/.git\\\"))|g' "${SCIP_SRC_DIR}/soplex/CMakeLists.txt"
-        perl -0pi -e 's|WORKING_DIRECTORY \${CMAKE_CURRENT_SOURCE_DIR}|WORKING_DIRECTORY \\\"\${CMAKE_CURRENT_SOURCE_DIR}\\\"|g' "${SCIP_SRC_DIR}/soplex/CMakeLists.txt"
+
+    # --- Start of R-package specific fixups (replacing patches 0005, 0006, 0007, 0009) ---
+
+    # 1. Fix xmlparse.c R_OK redefinition (Fixes 0005)
+    if [ -f "${SCIP_SRC_DIR}/scip/src/xml/xmlparse.c" ]; then
+        # Use loose regex for R_OK block to handle varying whitespace/newlines
+        perl -0pi -e 's|#ifdef _WIN32\s*#define R_OK 0|#ifdef _WIN32\n#ifdef R_OK\n#undef R_OK\n#endif\n#define R_OK 0|s' "${SCIP_SRC_DIR}/scip/src/xml/xmlparse.c"
     fi
+
+    # 2. Redirect SCIP output to R (Fixes 0006)
+    if [ -f "${SCIP_SRC_DIR}/scip/src/scip/message_default.c" ]; then
+        # Add includes
+        perl -pi -e 's|#include \"scip/struct_message.h\"|#include \"scip/struct_message.h\"\n#include <R_ext/Print.h>|' "${SCIP_SRC_DIR}/scip/src/scip/message_default.c"
+        
+        # Replace logMessage body (using -0pi for multiline match)
+        # We match the function body content somewhat loosely to be robust
+        perl -0pi -e 's|if \( msg != NULL \)\n      fputs\(msg, file\);\n   fflush\(file\);|if ( msg != NULL ) { Rprintf("%s", msg); }|g' "${SCIP_SRC_DIR}/scip/src/scip/message_default.c"
+
+        # Replace messageWarningDefault body
+        perl -0pi -e 's|if \( msg != NULL && msg\[0\] != .\\0. && msg\[0\] != .\\n. \)\n      fputs\(\"WARNING: \", file\);|if ( msg != NULL && msg[0] != '\''\\0'\'' && msg[0] != '\''\\n'\'' )\n      Rprintf(\"WARNING: \");|g' "${SCIP_SRC_DIR}/scip/src/scip/message_default.c"
+    fi
+
+    # 3. Remove abort calls and use SCIPABORT (Fixes 0007)
+    # def.h
+    if [ -f "${SCIP_SRC_DIR}/scip/src/scip/def.h" ]; then
+         # Add declaration for Rf_error (guarded) and abort replacement prototype
+         perl -pi -e 's|/\*#define DEBUG\*/|/\*#define DEBUG\*/\n\n/\* Use R Error handling \*/\n#ifdef __cplusplus\nextern \"C\" {\n#endif\n#ifndef SCIP_R_ERROR_DECLARED\n#define SCIP_R_ERROR_DECLARED\nvoid Rf_error(const char *, ...);\n#endif\n#ifdef SCIP_R_PACKAGE\n#ifndef SCIP_ABORT_REPLACEMENT_DECLARED\n#define SCIP_ABORT_REPLACEMENT_DECLARED\nvoid SCIP_abort_replacement(void);\n#endif\n#endif\n#ifdef __cplusplus\n}\n#endif|' "${SCIP_SRC_DIR}/scip/src/scip/def.h"
+         # Replace SCIPABORT definition
+         perl -pi -e 's|#define SCIPABORT\(\)
+ assert\(FALSE\)|#define SCIPABORT() Rf_error(\"SCIP Abort\")|' "${SCIP_SRC_DIR}/scip/src/scip/def.h"
+    fi
+    
+    # lp.c ASSERT
+    if [ -f "${SCIP_SRC_DIR}/scip/src/scip/lp.c" ]; then
+         perl -pi -e 's|#define ASSERT\(x\) do \{ if\( !\(x\) \) abort\(\); \} while\( FALSE \)|#define ASSERT(x) do { if( !(x) ) SCIPABORT(); } while( FALSE )|' "${SCIP_SRC_DIR}/scip/src/scip/lp.c"
+    fi
+
+    # xmldef.h ALLOC_ABORT
+    if [ -f "${SCIP_SRC_DIR}/scip/src/xml/xmldef.h" ]; then
+         perl -pi -e 's|abort\(\);|SCIPABORT();|' "${SCIP_SRC_DIR}/scip/src/xml/xmldef.h"
+    fi
+
+    # lpi_glop.cpp abort() calls
+    if [ -f "${SCIP_SRC_DIR}/scip/src/lpi/lpi_glop.cpp" ]; then
+         perl -pi -e 's|abort\(\);|SCIPABORT();|g' "${SCIP_SRC_DIR}/scip/src/lpi/lpi_glop.cpp"
+    fi
+
+    # tclique_def.h - Add stdlib.h and abort replacement prototype
+    if [ -f "${SCIP_SRC_DIR}/scip/src/tclique/tclique_def.h" ]; then
+         echo "Patching tclique_def.h..."
+         perl -pi -e 's|^#define __TCLIQUE_DEF_H__\s*$|#define __TCLIQUE_DEF_H__\n\n#include <stdlib.h>\n#ifdef SCIP_R_PACKAGE\n#ifndef SCIP_ABORT_REPLACEMENT_DECLARED\n#define SCIP_ABORT_REPLACEMENT_DECLARED\n#ifdef __cplusplus\nextern \"C\" {\n#endif\nvoid SCIP_abort_replacement(void);\n#ifdef __cplusplus\n}\n#endif\n#endif\n#endif|' "${SCIP_SRC_DIR}/scip/src/tclique/tclique_def.h"
+    fi
+
+    # dijkstra.h - Add stdlib.h and abort replacement prototype
+    if [ -f "${SCIP_SRC_DIR}/scip/src/dijkstra/dijkstra.h" ]; then
+         echo "Patching dijkstra.h..."
+         perl -pi -e 's|^#define DIJSKSTRA_H\s*$|#define DIJSKSTRA_H\n\n#include <stdlib.h>\n#ifdef SCIP_R_PACKAGE\n#ifndef SCIP_ABORT_REPLACEMENT_DECLARED\n#define SCIP_ABORT_REPLACEMENT_DECLARED\n#ifdef __cplusplus\nextern \"C\" {\n#endif\nvoid SCIP_abort_replacement(void);\n#ifdef __cplusplus\n}\n#endif\n#endif\n#endif|' "${SCIP_SRC_DIR}/scip/src/dijkstra/dijkstra.h"
+    fi
+
+    # xmldef.h - Add stdlib.h for exit/abort prototypes
+    if [ -f "${SCIP_SRC_DIR}/scip/src/xml/xmldef.h" ]; then
+         echo "Patching xmldef.h..."
+         perl -pi -e 's|^#define __SCIP_XMLDEF_H__\s*$|#define __SCIP_XMLDEF_H__\n\n#include <stdlib.h>|' "${SCIP_SRC_DIR}/scip/src/xml/xmldef.h"
+    fi
+
+    # 4. CppAD error handler (Fixes 0009)
+    if [ -f "${SCIP_SRC_DIR}/scip/src/cppad/utility/error_handler.hpp" ]; then
+        # Add extern C for Rf_error with guard
+        perl -pi -e 's|# include <cstdlib>|# include <cstdlib>\n\n#ifdef SCIP_R_PACKAGE\nextern \"C\" {\n#ifndef SCIP_R_ERROR_DECLARED\n#define SCIP_R_ERROR_DECLARED\n    void Rf_error(const char *, ...);\n#endif\n}\n#endif|' "${SCIP_SRC_DIR}/scip/src/cppad/utility/error_handler.hpp"
+        # Use Rf_error
+        perl -pi -e 's|using std::cerr;|using std::cerr;\n#ifdef SCIP_R_PACKAGE\n        Rf_error(\"CppAD Error: %s\", msg);\n#else|' "${SCIP_SRC_DIR}/scip/src/cppad/utility/error_handler.hpp"
+        # End ifdef
+        perl -pi -e 's|std::exit\(1\);|std::exit(1);\n#endif|' "${SCIP_SRC_DIR}/scip/src/cppad/utility/error_handler.hpp"
+    fi
+
+    # --- End of R-package specific fixups ---
 fi
 
 PATCH_DIR="${R_SCIP_PKG_HOME}/inst/patches"
@@ -121,6 +183,7 @@ cd "${R_SCIP_BUILD_DIR}"
 # Derive build options
 DEFAULT_CMAKE_OPTS="\
     -DCMAKE_INSTALL_PREFIX=${R_SCIP_LIB_DIR_ESC} \
+    -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_POSITION_INDEPENDENT_CODE:bool=ON \
     -DBUILD_SHARED_LIBS:bool=OFF \
     -DSHARED:bool=OFF \
@@ -128,6 +191,7 @@ DEFAULT_CMAKE_OPTS="\
     -DSCIP_BUILD_EXECUTABLE:bool=OFF \
     -DSOPLEX_BUILD_EXECUTABLE:bool=OFF \
     -DSOPLEX_BUILD_SHARED:bool=OFF \
+    -DSOPLEX_BUILD_TESTS:bool=OFF \
     -DQUADMATH:bool=OFF \
     -DPAPILO:bool=OFF \
     -DZIMPL:bool=OFF \
@@ -145,5 +209,5 @@ echo "Cmake Options"
 echo ${CMAKE_OPTS}
 echo ""
 
-${CMAKE_EXE} .. ${CMAKE_OPTS} -G "Unix Makefiles"
+${CMAKE_EXE} .. ${CMAKE_OPTS} -G "Unix Makefiles" -Wno-dev
 ${MAKE} install

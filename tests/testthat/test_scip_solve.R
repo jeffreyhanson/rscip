@@ -8,10 +8,7 @@ test_that("works with sparse matrix", {
     rhs = c(4, 1),
     sense = c("<=", ">="),
     vtype = c("B", "B", "B"),
-    A = as_Matrix(
-      matrix(c(1, 2, 3, 1, 1, 0), nrow = 2, ncol = 3, byrow = TRUE),
-      "dgCMatrix"
-    ),
+    A = rscip:::as_Matrix(matrix(c(1, 2, 3, 1, 1, 0), nrow = 2, ncol = 3, byrow = TRUE), "dgCMatrix"),
     verbose = FALSE
   )
   # tests
@@ -76,10 +73,7 @@ test_that("works with initial solution", {
     rhs = c(4, 1),
     sense = c("<=", ">="),
     vtype = c("B", "B", "B"),
-    A = as_Matrix(
-      matrix(c(1, 2, 3, 1, 1, 0), nrow = 2, ncol = 3, byrow = TRUE),
-      "dgCMatrix"
-    ),
+    A = rscip:::as_Matrix(matrix(c(1, 2, 3, 1, 1, 0), nrow = 2, ncol = 3, byrow = TRUE), "dgCMatrix"),
     initial_solution = c(1, NA, 1),
     verbose = FALSE
   )
@@ -192,14 +186,10 @@ test_that("handles infeasible initial_solution", {
     ub = c(1, 1, 5),
     rhs = c(4, 1),
     sense = c("<=", ">="),
-    vtype = c("B", "B", "I"),
-    A = as_Matrix(
-      matrix(c(1, 2, 3, 1, 1, 0), nrow = 2, ncol = 3, byrow = TRUE),
-      "dgCMatrix"
-    ),
-    initial_solution = c(1, NA, 4),
-    verbose = FALSE
-  )
+        vtype = c("B", "B", "I"), A = rscip:::as_Matrix(matrix(c(1, 2, 3, 
+            1, 1, 0), nrow = 2, ncol = 3, byrow = TRUE), "dgCMatrix"), 
+        initial_solution = c(1, NA, 4), verbose = FALSE)
+    
   # tests
   expect_type(x, "list")
   expect_named(x, c("objval", "x", "status"))

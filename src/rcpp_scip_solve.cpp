@@ -12,7 +12,6 @@ Rcpp::List rcpp_scip_solve(Rcpp::CharacterVector &modelsense, Rcpp::NumericVecto
                            bool first_feasible = false, bool presolve = true, std::size_t threads = 1,
                            bool verbose = true, std::size_t display_width = 143)
 {
-
     // Initialization
     /// initialize scip environment
     SCIP *scip = nullptr;
@@ -20,11 +19,11 @@ Rcpp::List rcpp_scip_solve(Rcpp::CharacterVector &modelsense, Rcpp::NumericVecto
     SCIP_CALL(SCIPincludeDefaultPlugins(scip));
 
     /// compute constants
-    const std::size_t n_vars = obj.size();
-    const std::size_t n_consts = rhs.size();
-    const std::size_t n_initial_vars = initial_index.size();
-    const std::size_t n_nz = A_i.size();
-    if (A_j.size() != n_nz || A_x.size() != n_nz)
+    const std::size_t n_vars = static_cast<std::size_t>(obj.size());
+    const std::size_t n_consts = static_cast<std::size_t>(rhs.size());
+    const std::size_t n_initial_vars = static_cast<std::size_t>(initial_index.size());
+    const R_xlen_t n_nz = A_i.size();
+    if (static_cast<R_xlen_t>(A_j.size()) != n_nz || static_cast<R_xlen_t>(A_x.size()) != n_nz)
     {
         Rcpp::stop("`A_i`, `A_j`, and `A_x` must have the same length");
     }
@@ -48,7 +47,7 @@ Rcpp::List rcpp_scip_solve(Rcpp::CharacterVector &modelsense, Rcpp::NumericVecto
     }
 
     /// add variables
-    SCIP_Vartype var_type;
+    SCIP_Vartype var_type = SCIP_VARTYPE_CONTINUOUS;
     std::vector<SCIP_VAR *> vars(n_vars);
     for (std::size_t i = 0; i < n_vars; ++i)
     {
@@ -67,6 +66,10 @@ Rcpp::List rcpp_scip_solve(Rcpp::CharacterVector &modelsense, Rcpp::NumericVecto
         {
             var_type = SCIP_VARTYPE_INTEGER;
         }
+        else
+        {
+            Rcpp::stop("`vtype` not recognized.");
+        }
         /// add variable to problem
         SCIP_CALL(SCIPcreateVarBasic(scip, &var, NULL, lb[i], ub[i], obj[i], var_type));
         SCIP_CALL(SCIPaddVar(scip, var));
@@ -78,9 +81,9 @@ Rcpp::List rcpp_scip_solve(Rcpp::CharacterVector &modelsense, Rcpp::NumericVecto
     std::vector<SCIP_Real> A_row_coefs(n_vars);
     std::vector<SCIP_VAR *> A_row_vars(n_vars);
     std::vector<SCIP_CONS *> constraints(n_consts);
-    SCIP_Real const_rhs;
-    SCIP_Real const_lhs;
-    std::size_t counter = 0; // counter for A_i, A_j, A_x
+    SCIP_Real const_rhs = 0.0;
+    SCIP_Real const_lhs = 0.0;
+    R_xlen_t counter = 0; // counter for A_i, A_j, A_x
     std::size_t k;           // counter for non-zero values in i'th constraint
     for (std::size_t i = 0; i < n_consts; ++i)
     {
@@ -120,6 +123,10 @@ Rcpp::List rcpp_scip_solve(Rcpp::CharacterVector &modelsense, Rcpp::NumericVecto
         {
             const_lhs = rhs[i];
             const_rhs = rhs[i];
+        }
+        else
+        {
+            Rcpp::stop("`sense` not recognized.");
         }
         /// add constraints to problem
         SCIP_CONS *cons = nullptr;

@@ -28,3 +28,8 @@ pkgdown
 ^\.github$
 codecov.yml
 ^inst/debug$
+^\.tmp_soplex_patch$
+^src/Makevars$
+^src/Makevars\.win$
+^rscip_.*\.tar\.gz$
+^Support$

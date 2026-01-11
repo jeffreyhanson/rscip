@@ -1,4 +1,5 @@
 #!/bin/sh
 
 rm -f src/*.o src/*.so src/*.rds
+rm -f src/Makevars src/Makevars.win
 rm -rf src/sciplib
